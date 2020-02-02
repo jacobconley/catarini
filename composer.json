@@ -1,0 +1,17 @@
+{
+	"name": "jakeconley/catarini",
+	"description": "A web framework for the Hack language.",
+
+	"repositories": [
+		{
+			"type": "vcs", 
+			"url": "https://github.com/jacobconley/hack-toml"
+		}
+	],
+	"require": {
+		"hhvm/hhvm-autoload": "^2.0.11",
+		"hhvm/hsl": "^4.40",
+		"jacobconley/hack-toml": "^2.2",
+		"facebook/hack-codegen": "^4.3"
+	}
+}

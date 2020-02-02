@@ -1,0 +1,105 @@
+<?hh namespace com\jakeconley\utils;
+
+class LdapException extends \Exception
+{
+	public function __construct($ldap)
+	{
+		$message = ldap_error($ldap);
+		parent::__construct($message, ldap_errno($ldap), null);
+	}
+}
+
+/**
+ * An LDAP wrapper class.
+ * @throws com\jakeconley\utils\LdapException
+ * @author Jake Conley
+ */
+class ConleyLdap
+{
+	private $config;
+	private $resource;
+
+	/**
+	 * Connect to the LDAP server specified in the configuration array provided.
+	 * @param $config An array of the following structure:
+	 *		'verson'			=> [ Optional ] argument for LDAP_OPT_PROTOCOL_VERSION
+	 *		'host'				=> hostname
+	 *		'port'				=> port
+	 *		'bind-dn'			=> Bind DN
+	 *		'bind-pw'			=> Bind password
+	 *	##	Base DNs	##
+	 *		'base-sprd-users'	=> [ string ]
+	 *		'base-sprd-groups'	=> [ string ]
+	 *		'base-ired-users'	=> [ string ] 
+	 *		'base-ired-domains'	=> [ string ] 
+	 *	##	Attributes	##
+	 *		'attr_user-name'	=> [ string ]
+	 *		'attr_full-name'
+	 *		'attr_e-mail'
+	 * @return [ void ]
+	 */
+	public function __construct($config)
+	{
+		$this->config = $config;
+	}
+
+	public function Connect() : void
+	{
+		$this->resource = ldap_connect($this->config['host'], $this->config['port']);
+		ldap_set_option($this->resource, LDAP_OPT_PROTOCOL_VERSION, (isset($this->config['version']) ? $this->config['version'] : 3));
+		if(! $this->resource)																	throw new LdapException($this->resource);
+		if(! ldap_bind($this->resource, $this->config['bind-dn'], $this->config['bind-pw']))	throw new LdapException($this->resource);
+		if($this->config['start_tls'] && !ldap_start_tls($this->resource)) 						throw new LdapException($this->resource);
+	}
+	public function Close() : bool { return ldap_close($this->resource); }
+
+	/**
+	 * Performs an LDAP search.
+	 * @param $base, $filter
+	 * @return Array of entries, or NULL if empty
+	 * @throws LdapException
+	 */
+	public function Search($base, $filter) : ?array
+	{
+		$stat = ldap_search($this->resource, $base, $filter);
+		if($stat===FALSE) throw new LdapException($this->resource);
+		$res = ldap_get_entries($this->resource, $stat);
+		if($res === NULL || $res['count'] == 0) return NULL;
+		return $res;
+	}
+	/**
+	 * Reads an entry.
+	 * Implemented as a search with LDAP_SCOPE_BASE.
+	 * @param $dn The DN of the entry to read.
+	 * @param $filter A filter to apply.  If left NULL, objectClass=* will be used, returning all information.
+	 * @return Array of entries, or NULL if empty
+	 * @throws LdapException
+	 */
+	 public function Read($dn, $filter=NULL) : ?array 
+	 {
+	 	$stat = ldap_read($this->resource, $dn, ($filter ? $filter : 'objectClass=*'));
+	 	if($stat===FALSE) throw new LdapException($this->resource);
+		$res = ldap_get_entries($this->resource, $stat);
+		if($res === NULL || $res['count'] == 0) return NULL;
+		return $res;
+	 }
+
+	/**
+	 * Performs an LDAP comparison.
+	 * @param $dn, $attribute, $value
+	 * @return TRUE if equal, FALSE otherwise
+	 */
+	public function Compare($dn, $attribute, $value) : bool 
+	{
+		$stat = ldap_compare($this->resource, $dn, $attribute, $value);
+		if($stat===-1) throw new LdapException($this->resource);
+		return $stat;
+	}
+
+	/**
+	 * Binds the LDAP Instance.
+	 * @param $dn, $pw
+	 * @return TRUE if successful, FALSE if failure
+	 */
+	public function Bind($dn, $pw) : bool { return @ldap_bind($this->resource, $dn, $pw); }
+}
