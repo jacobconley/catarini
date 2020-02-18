@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "5a3ba3c6177a2a589063ba096f6afdfe",
+    "content-hash": "d14352c7d9f8de9cbbb1b4f0e65bc4c3",
     "packages": [
         {
             "name": "facebook/hack-codegen",
@@ -66,6 +66,49 @@
                 "hack"
             ],
             "time": "2019-10-31T20:25:15+00:00"
+        },
+        {
+            "name": "facebook/xhp-lib",
+            "version": "v3.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/hhvm/xhp-lib.git",
+                "reference": "43e2e83f09b8bb1df5559eacbe1d3b3b42f0ba10"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/hhvm/xhp-lib/zipball/43e2e83f09b8bb1df5559eacbe1d3b3b42f0ba10",
+                "reference": "43e2e83f09b8bb1df5559eacbe1d3b3b42f0ba10",
+                "shasum": ""
+            },
+            "require": {
+                "hhvm": "^4.25",
+                "hhvm/type-assert": "^3.0"
+            },
+            "require-dev": {
+                "facebook/fbexpect": "^2.0.0",
+                "hhvm/hacktest": "^2.0",
+                "hhvm/hhvm-autoload": "^2.0"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "2.x-dev"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "Class library for XHP",
+            "homepage": "https://github.com/facebook/xhp-lib",
+            "keywords": [
+                "facebook",
+                "hack",
+                "hhvm",
+                "xhp"
+            ],
+            "time": "2019-11-21T22:09:31+00:00"
         },
         {
             "name": "hhvm/hhvm-autoload",

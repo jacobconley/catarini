@@ -11,12 +11,15 @@
 	"require": {
 		"hhvm/hhvm-autoload": "^2.0.11",
 		"hhvm/hsl": "^4.40",
-		"jacobconley/hack-toml": "^2.2",
+		"hhvm/type-assert": "^3.7",
+		
+		"facebook/xhp-lib": "^3.0.1",
 		"facebook/hack-codegen": "^4.3",
-		"hhvm/type-assert": "^3.7"
+
+		"jacobconley/hack-toml": "^2.2"
 	}, 
 	"require-dev": {
-                 "hhvm/hacktest": "^2.0",
-                 "facebook/fbexpect": "^2.7.3"
-        }
+		"hhvm/hacktest": "^2.0",
+		"facebook/fbexpect": "^2.7.3"
+	}
 }

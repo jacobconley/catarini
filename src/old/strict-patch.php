@@ -6,6 +6,7 @@ use \Lib\Vec;
 
 // We gota make this class cos hhvm hasn't fully migrated to strict mode yet for superglobals n allat
 
+
 class _partialFramework { 
 
 	// $_SERVER stuff
