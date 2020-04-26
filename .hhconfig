@@ -1,0 +1,1 @@
+ignored_paths = [ "vendor/jacobconley/hack-toml/tests/.+", "vendor/hhvm/hhvm-autoload/bin/.+", "vendor/bin/.+" ];

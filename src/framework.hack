@@ -1,6 +1,7 @@
 use catarini\routing\Router; 
 use catarini\PARTIAL; 
 use namespace Facebook\{ TypeAssert, TypeCoerce };
+use HH\Lib\Dict; 
 
 class Catarini { 
 
@@ -41,13 +42,15 @@ class Catarini {
     
 
     // 
-    // Parameters
+    // Request
     // 
 
     <<__Memoize>>
     public function urldict() : dict<string, mixed> { 
-        //TODO: Include routing params 
-        return PARTIAL::_GET();
+        $x = PARTIAL::_GET();
+        $rp = $this->route()->_rawurlparams(); 
+        if($rp) return Dict\merge($x, $rp); 
+        else return $x; 
     }
 
     <<__Memoize>>
@@ -79,9 +82,11 @@ class Catarini {
     // HTML Stuff
     // 
 
+    <<__Memoize>>
+    public function html() : _CatariniXHP { 
+        return new _CatariniXHP($this); 
+    }
 
-    //TODO: Building head element (reuqire cs & js, etc)
-    //TODO: Locales 
 
-    
+    //TODO: Locales a
 }

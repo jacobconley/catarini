@@ -12,4 +12,12 @@ class PARTIAL {
 	public static function getRequestMethod() : string { return $_SERVER['REQUEST_METHOD']; }
 
     public static function getRequestContentType() : ?string { return $_SERVER['CONTENT_TYPE']; }
+
+
+
+    //
+    // Private
+    // 
+
+    public static function __set_SERVER($x) : void { $_SERVER = $x; }
 }
