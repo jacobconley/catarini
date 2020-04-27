@@ -2,7 +2,7 @@
 
 
 <<__EntryPoint>>
-function example_render() : noreturn { 
+function main() : noreturn { 
 
     $C = Catarini::GET(); 
 
