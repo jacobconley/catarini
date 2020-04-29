@@ -2,7 +2,7 @@
 	"name": "jacobconley/catarini",
 	"description": "A web framework for the Hack language.",
 
-	"bin": ["bin/catarini.hack"],
+	"bin": ["bin/catarini"],
 
 	"repositories": [
 		{

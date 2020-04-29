@@ -1,3 +1,5 @@
+#!/usr/bin/env hhvm
+
 require_once '../hh_autoload.hh';
 
 <<__EntryPoint>>
