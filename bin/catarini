@@ -1,8 +1,8 @@
 #!/usr/bin/env hhvm
 
-require_once '../hh_autoload.hh';
+require_once dirname(__FILE__).'/../hh_autoload.hh';
 
 <<__EntryPoint>>
-function cli_main(array<string> $argv) : noreturn { 
-    catarini\cli\main($argv); 
+function cli_main() : noreturn { 
+    catarini\cli\main(catarini\PARTIAL::__argv()); 
 }

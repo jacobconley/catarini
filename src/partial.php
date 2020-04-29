@@ -20,4 +20,6 @@ class PARTIAL {
     // 
 
     public static function __set_SERVER($x) : void { $_SERVER = $x; }
+
+    public static function __argv() : array<string> { return $_SERVER['ARGV'] || array(); }
 }
