@@ -4,5 +4,5 @@ require_once dirname(__FILE__).'/../hh_autoload.hh';
 
 <<__EntryPoint>>
 function cli_main() : noreturn { 
-    catarini\cli\main(catarini\PARTIAL::__argv()); 
+    catarini\cli\main($argv); 
 }
