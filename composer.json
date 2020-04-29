@@ -2,6 +2,8 @@
 	"name": "jacobconley/catarini",
 	"description": "A web framework for the Hack language.",
 
+	"bin": ["bin/catarini.hack"],
+
 	"repositories": [
 		{
 			"type": "vcs", 
