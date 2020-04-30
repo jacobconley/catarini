@@ -1,8 +1,25 @@
 #!/usr/bin/env hhvm
+<?hh // partial
 
-require_once dirname(__FILE__).'/../hh_autoload.hh';
+// Find and run the autoloader
+
+function _find_autoloader($dir = __FILE__) : string 
+{ 
+    if(file_exists($dir.'/autoload.hack'))  return $dir.'/autoload.hack'; 
+    else if(file_exists("$dir/vendor"))     return _find_autoloader("$dir/vendor"); 
+    else if($dir != '/')                    return _find_autoloader(realpath($dir.'/..')); 
+    else { 
+        echo "[!] Could not find autoload.hack"; 
+        exit(2); 
+    }
+}
+
+require_once(_find_autoloader()); 
+Facebook\AutoloadMap\initialize(); 
+
+
 
 <<__EntryPoint>>
 function cli_main() : noreturn { 
-    catarini\cli\main($argv); 
+    catarini\cli\main($_SERVER['argv']); 
 }
