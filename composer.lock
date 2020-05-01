@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "280cebd77b5a35f00a615256945d4052",
+    "content-hash": "a1ef5ce2736606d8eea08898c1d2e843",
     "packages": [
         {
             "name": "facebook/hack-codegen",
@@ -236,16 +236,16 @@
         },
         {
             "name": "jacobconley/hack-toml",
-            "version": "v2.2.1",
+            "version": "v3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/jacobconley/hack-toml.git",
-                "reference": "cbf83865c46bac219cc7eb2c2b2aa868022937eb"
+                "reference": "26b9ff60e3b5c05b13e01c40433d61658103c313"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/jacobconley/hack-toml/zipball/cbf83865c46bac219cc7eb2c2b2aa868022937eb",
-                "reference": "cbf83865c46bac219cc7eb2c2b2aa868022937eb",
+                "url": "https://api.github.com/repos/jacobconley/hack-toml/zipball/26b9ff60e3b5c05b13e01c40433d61658103c313",
+                "reference": "26b9ff60e3b5c05b13e01c40433d61658103c313",
                 "shasum": ""
             },
             "require": {
@@ -259,10 +259,10 @@
             "type": "library",
             "description": "A TOML library for the Hack language",
             "support": {
-                "source": "https://github.com/jacobconley/hack-toml/tree/master",
+                "source": "https://github.com/jacobconley/hack-toml/tree/v3.0",
                 "issues": "https://github.com/jacobconley/hack-toml/issues"
             },
-            "time": "2020-04-25T20:46:23+00:00"
+            "time": "2020-05-01T00:52:04+00:00"
         }
     ],
     "packages-dev": [
@@ -336,16 +336,16 @@
         },
         {
             "name": "facebook/hh-clilib",
-            "version": "v2.3.0",
+            "version": "v2.3.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/hhvm/hh-clilib.git",
-                "reference": "10845e8780436728cdc0b9abbe20446777bdb199"
+                "reference": "dfc543f7b291d627981def4814f3fce9e554c105"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/hhvm/hh-clilib/zipball/10845e8780436728cdc0b9abbe20446777bdb199",
-                "reference": "10845e8780436728cdc0b9abbe20446777bdb199",
+                "url": "https://api.github.com/repos/hhvm/hh-clilib/zipball/dfc543f7b291d627981def4814f3fce9e554c105",
+                "reference": "dfc543f7b291d627981def4814f3fce9e554c105",
                 "shasum": ""
             },
             "require": {
@@ -369,20 +369,20 @@
             "license": [
                 "MIT"
             ],
-            "time": "2020-03-27T16:47:22+00:00"
+            "time": "2020-04-27T19:22:54+00:00"
         },
         {
             "name": "hhvm/hacktest",
-            "version": "v2.1.0",
+            "version": "v2.1.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/hhvm/hacktest.git",
-                "reference": "15663bc7fb2b35e1ab7c48089db7e674ac024482"
+                "reference": "e3fd815762cc09f72b65cbd676d39eb491c0c62b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/hhvm/hacktest/zipball/15663bc7fb2b35e1ab7c48089db7e674ac024482",
-                "reference": "15663bc7fb2b35e1ab7c48089db7e674ac024482",
+                "url": "https://api.github.com/repos/hhvm/hacktest/zipball/e3fd815762cc09f72b65cbd676d39eb491c0c62b",
+                "reference": "e3fd815762cc09f72b65cbd676d39eb491c0c62b",
                 "shasum": ""
             },
             "require": {
@@ -412,7 +412,7 @@
                 "MIT"
             ],
             "description": "The Hack Test Library",
-            "time": "2020-03-27T17:07:28+00:00"
+            "time": "2020-04-28T15:49:47+00:00"
         },
         {
             "name": "hhvm/hsl-experimental",
