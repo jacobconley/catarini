@@ -14,12 +14,12 @@ class _CatariniXHP {
 
 	public function append(mixed $el) : _CatariniXHP { 
 
-		$arry = TypeCoerce\match<vec<XHPRoot>>($el); 
-		if($arry) { 
+		if($el is XHPRoot) { 
+			$this->body[] = $el; 
+		} else { 
+			$arry = TypeCoerce\match<vec<XHPRoot>>($el); 
 			$this->body = Vec\concat($this->body, $arry); 
 		}
-
-		$this->body[] = TypeAssert\matches<XHPRoot>($el); 
 
 		return $this; 
 	}
@@ -68,8 +68,8 @@ class _CatariniXHP {
 		return <body>{ $this->body }</body>;
 	}
 
-	public function render() : XHPRoot { 
-		return <html>
+	public function render() : void { 
+		echo <html>
 			{ $this->renderHead() }
 			{ $this->renderBody() }
 		</html>;

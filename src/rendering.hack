@@ -38,6 +38,7 @@ function html((function(): \XHPRoot) $lambda) : noreturn {
     $html = $C->html();
     $body = null;  
 
+
     try { 
         $body = $lambda(); 
     }   
