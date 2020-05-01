@@ -2,11 +2,9 @@ namespace catarini\exception;
 use \Catarini; 
 
 class Exception extends \Exception { 
-
-    private Catarini $C; 
-    public function __construct(Catarini $framework, string $message) { 
+ 
+    public function __construct(string $message) { 
         parent::__construct($message); 
-        $this->C = $framework; 
     }
 
 }
@@ -16,9 +14,9 @@ class HttpException extends Exception implements Renderable {
     private int $status;
     public function getHttpStatus() : int { return $this->status; }
     
-    public function __construct(Catarini $C, int $status = 500) { 
+    public function __construct(int $status = 500) { 
         $this->status = $status; 
-        parent::__construct($C, "HTTP $status"); 
+        parent::__construct("HTTP $status"); 
     }
 
     // Overrideable XHP display 

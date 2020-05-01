@@ -85,7 +85,7 @@ class Router {
 	 * This is used for parallel inclusions
 	 */
 	public function setRoute(string $Route) : void { 
-		if($this->Route != NULL) throw new \catarini\exception\Exception($this->C, 'Route has already been set'); 
+		if($this->Route != NULL) throw new \catarini\exception\Exception('Route has already been set'); 
 		$this->Route = $Route;
 	}
 	/**
@@ -93,7 +93,7 @@ class Router {
 	 * @throws \catarini\exception\Exception
 	 */
 	public function getRoute() : string {
-		if($this->Route == NULL) throw new \catarini\exception\Exception($this->C, 'No route has been set');
+		if($this->Route == NULL) throw new \catarini\exception\Exception('No route has been set');
 		return $this->Route; 
 	}
 	public function hasRoute() : bool { return ($this->Route != NULL); }

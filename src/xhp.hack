@@ -40,7 +40,7 @@ class _CatariniXHP {
 		else if(Str\ends_with_ci($url, '.css')) { 
 			$this->head[] = <link rel="stylesheet" type="text/css" href={$url} />;
 		}
-		else throw new catarini\exception\Exception($this->C, "Unrecognized file type passed to ->include()");
+		else throw new catarini\exception\Exception("Unrecognized file type passed to ->include()");
 
 		return $this; 
 	}
