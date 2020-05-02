@@ -1,5 +1,6 @@
 namespace catarini\routing; 
 
+use catarini\exception;
 use HH\Lib\{ Regex, Str }; 
 
 // Dynamic URL / Route schema parsing 
@@ -151,6 +152,7 @@ class Router {
     }
  
 
+    private bool $hasMatch = false; 
     /*
      * Tests if the current requests matches the given route and method,
      *  and changes the state of this Router accordingly. 
@@ -164,7 +166,10 @@ class Router {
     {
         $request_uri = \catarini\PARTIAL::getRequestURI(); 
         $request_mtd = \catarini\PARTIAL::getRequestMethod(); 
-        return $this->_matches($routes, $method, $request_uri, $request_mtd);
+
+        $matches = $this->_matches($routes, $method, $request_uri, $request_mtd);
+        $this->hasMatch = $matches;
+        return $matches; 
     }
 
 
@@ -175,6 +180,8 @@ class Router {
 
     private function route(mixed $route, string $method) : RouteAction 
     { 
+        if($this->hasMatch) return new RouteAction($this, $method);
+
         $routes = NULL;  
         if($route is string) $routes = vec[ $route ]; 
         else $routes = \Facebook\TypeAssert\matches<vec<string>>($route); 
@@ -191,6 +198,10 @@ class Router {
 
     public function post(mixed $route) : RouteAction { 
         return $this->route($route, 'POST'); 
+    }
+
+    public function done() : void { 
+        // \catarini\render\html(() ==> { throw new exception\HttpException(404) });
     }
 
 }
@@ -217,7 +228,7 @@ class RouteAction {
 class RouteRender extends RouteAction { 
 
     public function xhp((function() : \XHPRoot) $lambda) : Router { 
-        \catarini\render\html($lambda); 
+        \catarini\render\xhp_lambda($lambda); 
     }
 
 

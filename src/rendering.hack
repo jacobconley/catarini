@@ -1,6 +1,6 @@
 namespace catarini\render; 
 
-
+use catarini\exception;
 
 // Error handling
 
@@ -30,30 +30,37 @@ class ErrorHandler {
 // "Main methods"
 // 
 
-function html((function(): \XHPRoot) $lambda) : noreturn { 
+function xhp(\XHPRoot $body) : noreturn { 
     $C = \Catarini::GET(); 
 
     //TODO: Asset pipeline stuff! 
 
     $html = $C->html();
-    $body = null;  
-
-
-    try { 
-        $body = $lambda(); 
-    }   
-    catch(\catarini\exception\Renderable $cex) { 
-
-        \http_response_code($cex->getHttpStatus()); 
-        $body = $cex->xhp(); 
-
-    }
-    catch(\Exception $ex) { 
-        \http_response_code(500); 
-        $body = $C->errors()->_invoke_xhp(500); 
-    }
 
     $html->append($body); 
     $html->render(); 
-    \exit(0); 
+
+    \exit(); 
+}
+
+
+function xhp_exception(exception\Renderable $cex) : noreturn { 
+   \http_response_code($cex->getHttpStatus());
+    \catarini\render\xhp($cex->xhp());
+}
+
+function xhp_lambda((function(): \XHPRoot) $lambda) : noreturn { 
+    $C = \Catarini::GET(); 
+
+
+    try { 
+        \catarini\render\xhp($lambda());
+    }   
+    catch(\catarini\exception\Renderable $cex) { 
+        xhp_exception($cex); 
+    }
+    catch(\Exception $ex) { 
+        \http_response_code(500); 
+        \catarini\render\xhp($C->errors()->_invoke_xhp(500));
+    }
 }

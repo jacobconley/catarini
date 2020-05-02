@@ -54,7 +54,7 @@ class Catarini {
     }
 
     <<__Memoize>>
-    public function bodydict() : dict<string, mixed> { 
+    public function requestdict() : dict<string, mixed> { 
         
         if(PARTIAL::getRequestContentType() == 'application/json') { 
             return json_decode(file_get_contents('php://input'), true);
@@ -66,16 +66,24 @@ class Catarini {
     public function urlparams<reify T>() : T { 
         return TypeCoerce\match<T>($this->urldict()); 
     }
-    public function bodyparams<reify T>() : T { 
-        return TypeAssert\matches<T>($this->bodydict()); 
+    public function requestparams<reify T>() : T { 
+        return TypeAssert\matches<T>($this->requestdict()); 
     }
 
     public function urlparam<reify T>(string $key) : T { 
         return TypeCoerce\match<T>($this->urldict()[ $key ]); 
     }
-    public function bodyparam<reify T>(string $key) : T { 
-        return TypeAssert\matches<T>($this->bodydict()[ $key ]);
+    public function requestparam<reify T>(string $key) : T { 
+        return TypeAssert\matches<T>($this->requestdict()[ $key ]);
     }
+
+    public function urlstring(string $key) : string { 
+        return TypeCoerce\match<string>($this->urldict()[ $key ]); 
+    }
+    public function requeststring(string $key) : string { 
+        return TypeCoerce\match<string>($this->requestdict()[ $key ]); 
+    }
+
 
 
     // 
