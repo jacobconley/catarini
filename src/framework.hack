@@ -14,10 +14,6 @@ class Catarini {
         return $x; 
     }
 
-    public static function SET(Catarini $x) : void { 
-        Catarini::$singleton = $x; 
-    }
-
     public function __construct() { 
     }
 
