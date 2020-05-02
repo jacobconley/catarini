@@ -1,5 +1,4 @@
 namespace catarini\exception; 
-use \Catarini; 
 
 class Exception extends \Exception { 
  
@@ -21,7 +20,7 @@ class HttpException extends Exception implements Renderable {
 
     // Overrideable XHP display 
     public function xhp() : \XHPRoot { 
-        return Catarini::GET()->errors()->_invoke_xhp($this->status); 
+        return \Catarini::GET()->errors()->_invoke_xhp($this->status); 
     }
 }
 

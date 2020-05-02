@@ -1,6 +1,6 @@
 namespace catarini\routing; 
 
-use catarini\exception;
+use catarini\exception\HttpException;
 use HH\Lib\{ Regex, Str }; 
 
 // Dynamic URL / Route schema parsing 
@@ -201,7 +201,8 @@ class Router {
     }
 
     public function done() : void { 
-        // \catarini\render\html(() ==> { throw new exception\HttpException(404) });
+        if($this->hasMatch) return; 
+        \catarini\render\xhp_exception(new HttpException(404));
     }
 
 }
