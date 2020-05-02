@@ -1,3 +1,4 @@
 vendor/
 test.hack
-build.sh
+
+deploy
