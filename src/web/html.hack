@@ -10,19 +10,6 @@ class _CatariniXHP {
 	}
 
 	private vec<XHPRoot> $head = vec[]; 
-	private vec<XHPRoot> $body = vec[]; 
-
-	// public function append(mixed $el) : _CatariniXHP { 
-
-	// 	if($el is XHPRoot) { 
-	// 		$this->body[] = $el; 
-	// 	} else { 
-	// 		$arry = TypeCoerce\match<vec<XHPRoot>>($el); 
-	// 		$this->body = Vec\concat($this->body, $arry); 
-	// 	}
-
-	// 	return $this; 
-	// }
 
 
 	private ?string $Title; 
@@ -67,17 +54,11 @@ class _CatariniXHP {
 		return $head; 
 	}
 
-	private function renderBody() : XHPRoot { 
-		return <body>{ $this->body }</body>;
-	}
-
-	public function render(?XHPRoot $content = NULL) : noreturn { 
-
-		if($content) $this->body[] = $content; 
-
+	public function render(?XHPRoot $content = NULL) : noreturn 
+	{ 
 		echo <html>
 			{ $this->renderHead() }
-			{ $this->renderBody() }
+			<body>{ $content }</body>
 		</html>;
 		\exit(0); 
 	}
