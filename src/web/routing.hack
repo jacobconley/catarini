@@ -1,5 +1,6 @@
 namespace catarini\routing; 
 
+use catarini\exception\HttpException;
 use HH\Lib\{ Regex, Str }; 
 
 // Dynamic URL / Route schema parsing 
@@ -85,15 +86,15 @@ class Router {
 	 * This is used for parallel inclusions
 	 */
 	public function setRoute(string $Route) : void { 
-		if($this->Route != NULL) throw new \catarini\exception\Exception($this->C, 'Route has already been set'); 
+		if($this->Route != NULL) throw new \catarini\Exception('Route has already been set'); 
 		$this->Route = $Route;
 	}
 	/**
 	 * Returns the current route.  If there is none, throws exception.
-	 * @throws \catarini\exception\Exception
+	 * @throws \catarini\Exception
 	 */
 	public function getRoute() : string {
-		if($this->Route == NULL) throw new \catarini\exception\Exception($this->C, 'No route has been set');
+		if($this->Route == NULL) throw new \catarini\Exception('No route has been set');
 		return $this->Route; 
 	}
 	public function hasRoute() : bool { return ($this->Route != NULL); }
@@ -151,6 +152,7 @@ class Router {
     }
  
 
+    private bool $hasMatch = false; 
     /*
      * Tests if the current requests matches the given route and method,
      *  and changes the state of this Router accordingly. 
@@ -164,7 +166,10 @@ class Router {
     {
         $request_uri = \catarini\PARTIAL::getRequestURI(); 
         $request_mtd = \catarini\PARTIAL::getRequestMethod(); 
-        return $this->_matches($routes, $method, $request_uri, $request_mtd);
+
+        $matches = $this->_matches($routes, $method, $request_uri, $request_mtd);
+        $this->hasMatch = $matches;
+        return $matches; 
     }
 
 
@@ -175,6 +180,8 @@ class Router {
 
     private function route(mixed $route, string $method) : RouteAction 
     { 
+        if($this->hasMatch) return new RouteAction($this, $method);
+
         $routes = NULL;  
         if($route is string) $routes = vec[ $route ]; 
         else $routes = \Facebook\TypeAssert\matches<vec<string>>($route); 
@@ -191,6 +198,11 @@ class Router {
 
     public function post(mixed $route) : RouteAction { 
         return $this->route($route, 'POST'); 
+    }
+
+    public function done() : void { 
+        if($this->hasMatch) return; // this might be redundant, the render functions all exit
+        $this->C->html()->render_error(404); 
     }
 
 }
@@ -217,7 +229,7 @@ class RouteAction {
 class RouteRender extends RouteAction { 
 
     public function xhp((function() : \XHPRoot) $lambda) : Router { 
-        \catarini\render\html($lambda); 
+        \Catarini::GET()->html()->render_lambda($lambda);
     }
 
 

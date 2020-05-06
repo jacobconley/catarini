@@ -2,6 +2,8 @@
 	"name": "jacobconley/catarini",
 	"description": "A web framework for the Hack language.",
 
+	"bin": ["bin/catarini"],
+
 	"repositories": [
 		{
 			"type": "vcs", 
@@ -16,7 +18,7 @@
 		"facebook/xhp-lib": "^3.0.1",
 		"facebook/hack-codegen": "^4.3",
 
-		"jacobconley/hack-toml": "^2.2"
+		"jacobconley/hack-toml": "^3.0"
 	}, 
 	"require-dev": {
 		"hhvm/hacktest": "^2.0",
