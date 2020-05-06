@@ -86,15 +86,15 @@ class Router {
 	 * This is used for parallel inclusions
 	 */
 	public function setRoute(string $Route) : void { 
-		if($this->Route != NULL) throw new \catarini\exception\Exception('Route has already been set'); 
+		if($this->Route != NULL) throw new \catarini\Exception('Route has already been set'); 
 		$this->Route = $Route;
 	}
 	/**
 	 * Returns the current route.  If there is none, throws exception.
-	 * @throws \catarini\exception\Exception
+	 * @throws \catarini\Exception
 	 */
 	public function getRoute() : string {
-		if($this->Route == NULL) throw new \catarini\exception\Exception('No route has been set');
+		if($this->Route == NULL) throw new \catarini\Exception('No route has been set');
 		return $this->Route; 
 	}
 	public function hasRoute() : bool { return ($this->Route != NULL); }
@@ -201,8 +201,8 @@ class Router {
     }
 
     public function done() : void { 
-        if($this->hasMatch) return; 
-        \catarini\render\xhp_exception(new HttpException(404));
+        if($this->hasMatch) return; // this might be redundant, the render functions all exit
+        $this->C->html()->render_error(404); 
     }
 
 }
@@ -229,7 +229,7 @@ class RouteAction {
 class RouteRender extends RouteAction { 
 
     public function xhp((function() : \XHPRoot) $lambda) : Router { 
-        \catarini\render\xhp_lambda($lambda); 
+        \Catarini::GET()->html()->render_lambda($lambda);
     }
 
 

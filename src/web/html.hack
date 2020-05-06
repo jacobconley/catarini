@@ -12,17 +12,17 @@ class _CatariniXHP {
 	private vec<XHPRoot> $head = vec[]; 
 	private vec<XHPRoot> $body = vec[]; 
 
-	public function append(mixed $el) : _CatariniXHP { 
+	// public function append(mixed $el) : _CatariniXHP { 
 
-		if($el is XHPRoot) { 
-			$this->body[] = $el; 
-		} else { 
-			$arry = TypeCoerce\match<vec<XHPRoot>>($el); 
-			$this->body = Vec\concat($this->body, $arry); 
-		}
+	// 	if($el is XHPRoot) { 
+	// 		$this->body[] = $el; 
+	// 	} else { 
+	// 		$arry = TypeCoerce\match<vec<XHPRoot>>($el); 
+	// 		$this->body = Vec\concat($this->body, $arry); 
+	// 	}
 
-		return $this; 
-	}
+	// 	return $this; 
+	// }
 
 
 	private ?string $Title; 
@@ -32,6 +32,9 @@ class _CatariniXHP {
 
 	// Assets
 
+	// Maybe this shite should be in the main framework object?
+	//  Well, no, within the body of a document the main object should be $C->html() anyways 
+
 	public function include(string $url) : _CatariniXHP { 
 
 		if(Str\ends_with_ci($url, '.js')) { 
@@ -40,7 +43,7 @@ class _CatariniXHP {
 		else if(Str\ends_with_ci($url, '.css')) { 
 			$this->head[] = <link rel="stylesheet" type="text/css" href={$url} />;
 		}
-		else throw new catarini\exception\Exception("Unrecognized file type passed to ->include()");
+		else throw new catarini\Exception("Unrecognized file type passed to ->include()");
 
 		return $this; 
 	}
@@ -68,11 +71,36 @@ class _CatariniXHP {
 		return <body>{ $this->body }</body>;
 	}
 
-	public function render() : void { 
+	public function render(?XHPRoot $content = NULL) : noreturn { 
+
+		if($content) $this->body[] = $content; 
+
 		echo <html>
 			{ $this->renderHead() }
 			{ $this->renderBody() }
 		</html>;
+		\exit(0); 
+	}
+
+
+
+	public function render_error(int $status) : noreturn { 
+		\http_response_code($status); 
+		$this->render( $this->C->errors()->_invoke_xhp($status) );
+	}
+	public function render_exception(\Exception $ex) : noreturn { 
+		$status = 500;
+		$cex = $ex ?as \catarini\Exception; 
+		if($cex) $status = $cex->getHttpStatus(); 
+		$this->render_error($status);
+	}
+
+	public function render_lambda((function() : XHPRoot) $lambda) : noreturn { 
+		try { 
+			$this->render($lambda()); 
+		}
+		catch (\Exception $ex) { $this->render_exception($ex); }
+		\exit(0); 
 	}
 
 

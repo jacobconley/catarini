@@ -7,7 +7,7 @@ class CONFIG {
         $dir = \realpath($dir); 
         if(\file_exists("$dir/..hhconfig"))     return $dir; 
         else if($dir != '/')                    return CONFIG::findRoot("$dir/.."); 
-        else throw new exception\Exception("[!] Could not find root directory");
+        else throw new \catarini\Exception("[!] Could not find root directory");
     }
 
     <<__Memoize>>
@@ -20,7 +20,7 @@ class CONFIG {
 
     private static bool $loaded = FALSE;
     private function load() : void { 
-        if(CONFIG::$loaded) throw new exception\Exception("[!] Config already loaded"); 
+        if(CONFIG::$loaded) throw new \catarini\Exception("[!] Config already loaded"); 
         CONFIG::$loaded = TRUE; 
 
         $file = CONFIG::findRoot().'/config/catarini.toml';
