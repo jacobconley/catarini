@@ -1,6 +1,6 @@
 namespace catarini\db\migration\actions;
 
-use catarini\db\schema\{ Database, TableCreatorBlock, TableChangerBlock  }; 
+use catarini\db\{ Database, TableCreatorBlock, TableChangerBlock  }; 
 
 // These are the underlying classes that provide reversible functionality for the Migration API 
 // It's super boilerplate... super automatable... worth looking into 

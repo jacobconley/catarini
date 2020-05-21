@@ -1,7 +1,7 @@
 namespace catarini\db\backend\mysql; 
 
-use catarini\db\schema;
-use catarini\db\schema\{ TableCreator, TableChanger, TableCreatorBlock, TableChangerBlock };
+use catarini\db; 
+use catarini\db\{ table_creator, table_changer, TableCreatorBlock, TableChangerBlock };
 
 use HH\Lib\{ Str, Vec }; 
 use HH\Asio;
@@ -9,24 +9,22 @@ use HH\Asio;
 use AsyncMysqlConnection;
 
 
-class Database implements schema\Database { 
+class Database implements db\Database { 
 
     private AsyncMysqlConnection $conn; 
     private function __construct(AsyncMysqlConnection $conn) {
         $this->conn = $conn; 
      }
     
-    public static async function PoolConnect(
-        string  $host, 
-        int     $port, 
-        string  $dbname, 
-        string  $user, 
-        string  $password, 
-        int     $timeout_micros = -1, 
-    ): Awaitable<Database>
+    public static function PoolConnect( string  $host, 
+                                        int     $port, 
+                                        string  $dbname, 
+                                        string  $user, 
+                                        string  $password, 
+                                        int     $timeout_micros = -1  ): Database
     { 
         $pool = new \AsyncMysqlConnectionPool(darray[]); 
-        return new Database(await $pool->connect($host, $port, $dbname, $user, $password, $timeout_micros));
+        return new Database(Asio\join($pool->connect($host, $port, $dbname, $user, $password, $timeout_micros)));
     }
 
 
@@ -40,10 +38,10 @@ class Database implements schema\Database {
 
     public function addTable(string $name, TableCreatorBlock $block) : this { 
 
-        $thing = new TableCreator(); 
+        $thing = new table_creator(); 
         $block($thing); 
         $cols = $thing->getColumns();
-        //TODO: Validate columns
+        //TODO: Validate columns (or, do this in the renderer)
 
         $query = "CREATE TABLE ".$this->conn->escapeString($name).' ';
 

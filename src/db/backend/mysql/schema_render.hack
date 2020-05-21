@@ -1,9 +1,15 @@
 namespace catarini\db\backend\mysql; 
 
-use catarini\db\schema;
-use catarini\db\schema\{ Column, ColumnFactory, Type };
+use catarini\db;
+use catarini\db\{ Column, ColumnFactory, Type };
 
 use AsyncMysqlConnection;
+
+/*
+    Instead of making Column subclasses for each DB type implementation, we use this class as an intermediary
+    We do this because the schema must be defined abstractly in the migrations
+    However, we can make implementation-specific subclasses for generated code 
+ */
 
 class ColumnRender { 
     private AsyncMysqlConnection $conn;

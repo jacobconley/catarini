@@ -1,5 +1,8 @@
 use catarini\routing\Router; 
 use catarini\PARTIAL; 
+use catarini\meta\CONFIG; 
+use catarini\db\Database; 
+
 use namespace Facebook\{ TypeAssert, TypeCoerce };
 use HH\Lib\Dict; 
 
@@ -78,6 +81,17 @@ class Catarini {
     }
     public function requeststring(string $key) : string { 
         return TypeCoerce\match<string>($this->requestdict()[ $key ]); 
+    }
+
+
+
+    //
+    // Utilities
+    //
+
+    <<__Memoize>>
+    public function db(?string $name = NULL) : Database { 
+        return CONFIG::GET()->getDatabase($name); 
     }
 
 

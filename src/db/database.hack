@@ -1,4 +1,4 @@
-namespace catarini\db\schema;
+namespace catarini\db;
 
 // This is the main API 
 // uuuuhhh
@@ -9,4 +9,5 @@ interface Database {
     public function changeTable(string $name, TableChangerBlock $block) : this; 
 
     public function delTable(string $name) : this; 
+
 }

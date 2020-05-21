@@ -1,6 +1,6 @@
 namespace catarini\db\schema;
 
-use catarini\db\schema\{ Column }; 
+use catarini\db\{ Column }; 
 
 interface TableSchema { 
     

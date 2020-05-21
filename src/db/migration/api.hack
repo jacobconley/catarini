@@ -1,7 +1,8 @@
 namespace catarini\db\migration;
 
-use catarini\db\{ schema };
-use catarini\db\schema\{ TableCreatorBlock, TableChangerBlock }; 
+use catarini\db;
+use catarini\db\Database;
+use catarini\db\{ TableCreatorBlock, TableChangerBlock }; 
 use catarini\db\migration\actions;
 use catarini\db\migration\actions\Action; 
 
@@ -9,11 +10,11 @@ use catarini\db\migration\actions\Action;
  * This wraps around schema\Database to provide a reversible class with the same API 
  */ 
 
-class API implements schema\Database
+class API implements Database
 { 
 
-    private schema\Database $DB;
-    public function __construct(schema\Database $DB) { 
+    private db\Database $DB;
+    public function __construct(Database $DB) { 
         $this->DB = $DB;
     }
  
