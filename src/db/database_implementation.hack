@@ -1,7 +1,5 @@
 namespace catarini\db;
 
-// Tdbm - Database-Model superclass
-// Tm - model subclass 
 interface DatabaseInstance extends Database { 
 
     //TODO: Define query hooks here that Query<T> can use
@@ -12,6 +10,16 @@ interface DatabaseInstance extends Database {
 
     // not sure why, but if i make this return Awaitable<Tm>, downstream functions will try to return 
     //  Awaitable<Awaitable<Tm>>, at least according to the typechecker
-    public function queryFirst<Tm, Tcol>(Query<Tm, Tcol> $query) : Tm;
+    // Tdbm - Database-Model superclass
+    // Tm - model subclass 
+    // public function queryFirst<Tm, Tcol>(Query<Tm, Tcol> $query) : Tm;
+
+
+
+    //
+    // Migration stuff here?
+    //
+
+    // Schema version, etc
 
 }

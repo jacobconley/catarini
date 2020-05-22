@@ -9,7 +9,7 @@ use HH\Asio;
 use AsyncMysqlConnection;
 
 
-class Database implements db\Database { 
+class Database implements db\DatabaseInstance { 
 
     private AsyncMysqlConnection $conn; 
     private function __construct(AsyncMysqlConnection $conn) {

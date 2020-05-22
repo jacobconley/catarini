@@ -6,9 +6,6 @@ class table_creator {
 
     protected vec<string> $names = vec[]; 
     protected vec<Column> $cols = vec[];
-    protected vec<string> $deleted = vec[]; 
-        // We'll need this for migration API schtuf
-        // so that 
 
     public function getColumns() : vec<Column> { return $this->cols; }
 
@@ -16,14 +13,16 @@ class table_creator {
         return Vec\filter($this->cols, $x ==> $x->getName() === $name)[0];
     }
 
-    protected function delColumn(string $name) : void { 
-        $this->cols = Vec\filter($this->cols, $x ==> $x->getName() !== $name);
-    }
-
-    public function _reg<T as Column>(string $name, T $col) : T { 
+    public function _reg<T as Column>(string $name, T $col, ?int $index) : T { 
         if(\in_array($name, $this->names)) throw new \catarini\Exception("Defining a duplicate column"); 
-        $this->names[] = $name; 
-        $this->cols[] = $col; 
+        
+        if($index is nonnull) { 
+            $this->names[$index]    = $name; 
+            $this->cols[$index]     = $col; 
+        } else { 
+            $this->names[]          = $name; 
+            $this->cols[]           = $col; 
+        }
         return $col; 
     }
 
@@ -35,18 +34,24 @@ class table_creator {
     public function add(string $name) : column_changer{
         return new column_changer($this, $name);
     }
-
-
-    public function del(string $name) : void { 
-        $this->deleted[] = $name; 
-    }
 }
 
 class table_changer extends table_creator { 
 
+
+    protected vec<string> $deletedNames = vec[]; 
+        // We'll need this for migration API schtuf
+        // so that the ALTER TABLE can include DROP COLUMN directives 
+
+
+    public function del(string $name) : void { 
+        $this->deletedNames[] = $name; 
+        $this->cols =   Vec\first_key($this->cols, $x ==>  $x->getName() === $name  )  |>  Vec\without($this->cols, $$); 
+    }
+
     public function change(string $name) : column_changer { 
-        $this->delColumn($name);
-        return new column_changer($this, $name);
+        $i = Vec\first_key($this->cols, $x ==> $x->getName() === $name); 
+        return new column_changer($this, $name, $i);
     }
 
 }
@@ -56,14 +61,16 @@ class column_changer {
 
     private table_creator $parent;
     private string $name;
-    public function __construct(table_creator $parent, string $name) { 
+    private ?int $index;
+    public function __construct(table_creator $parent, string $name, ?int $index = NULL) { 
         $this->parent   = $parent;
         $this->name     = $name; 
+        $this->index    = $index; 
     }
 
     // Schema API 
     public function int()  : Column { 
-        return $this->parent->_reg($this->name, new Column(Type::INT, $this->name));
+        return $this->parent->_reg($this->name, new Column(Type::INT, $this->name), $this->index);
     }
 
     // // public function numeric(, int $precision, int $scale) : Column { 

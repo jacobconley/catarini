@@ -21,5 +21,5 @@ Facebook\AutoloadMap\initialize();
 
 <<__EntryPoint>>
 function cli_main() : noreturn { 
-    catarini\cli\main($_SERVER['argv']); 
+    (new catarini\cli\CLI())->main($_SERVER['argv']); 
 }

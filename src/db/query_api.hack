@@ -63,7 +63,7 @@ class Query<Tm, Tcol> {
 
     // Finalizers
     // These return resULTS 
-    public async function first() : Awaitable<Tm> { return $this->DB->queryFirst<Tm, Tcol>($this);  } 
+    // public async function first() : Awaitable<Tm> { return $this->DB->queryFirst<Tm, Tcol>($this);  } 
 }
 
 

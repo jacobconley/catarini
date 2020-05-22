@@ -10,4 +10,6 @@ interface Database {
 
     public function delTable(string $name) : this; 
 
+    //TODO: Rename 
+
 }

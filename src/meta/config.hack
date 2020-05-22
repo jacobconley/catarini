@@ -75,7 +75,7 @@ class CONFIG {
     //
 
 
-    public function getDatabase(?string $name = NULL) : db\Database { 
+    public function getDatabase(?string $name = NULL) : db\DatabaseInstance { 
         //TODO: Multiple names
         // for now, the first one 
 
