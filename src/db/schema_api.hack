@@ -4,45 +4,56 @@ use HH\Lib\Vec;
 
 class table_creator { 
 
-    protected vec<string> $names = vec[]; 
     protected vec<Column> $cols = vec[];
 
+    // maybe these should be private? to emphasize add(), the only thing that matters 
     public function getColumns() : vec<Column> { return $this->cols; }
-
     protected function getColumn(string $name) : Column { 
         return Vec\filter($this->cols, $x ==> $x->getName() === $name)[0];
     }
 
-    public function _reg<T as Column>(string $name, T $col, ?int $index) : T { 
-        if(\in_array($name, $this->names)) throw new \catarini\Exception("Defining a duplicate column"); 
+    // These functions add columns and shit 
+
+    public function add(string $name) : column_changer{
+        if(Vec\find_first_key($this->cols, $col ==> $col->getName() === $name) is nonnull) throw new \catarini\Exception("Defining a duplicate column");
+        return new column_changer($this, $name);
+    }
+
+
+    //
+    // Private APIS
+    //
+
+
+    public function _reg<T as Column>(string $name, T $col, ?int $index) : T {  
         
         if($index is nonnull) { 
-            $this->names[$index]    = $name; 
             $this->cols[$index]     = $col; 
-        } else { 
-            $this->names[]          = $name; 
+        } else {  
             $this->cols[]           = $col; 
         }
         return $col; 
     }
 
-
-
-
-    // These functions add columns and shit 
-
-    public function add(string $name) : column_changer{
-        return new column_changer($this, $name);
-    }
+    // Test/Debug
 }
 
 class table_changer extends table_creator { 
+
+    public function __construct(vec<Column> $cols) {
+        $this->cols = $cols; 
+    }
 
 
     protected vec<string> $deletedNames = vec[]; 
         // We'll need this for migration API schtuf
         // so that the ALTER TABLE can include DROP COLUMN directives 
 
+    protected vec<string> $changedNames = vec[]; 
+
+
+
+    //TODO: How to handle no-such-column errors?
 
     public function del(string $name) : void { 
         $this->deletedNames[] = $name; 
@@ -51,8 +62,17 @@ class table_changer extends table_creator {
 
     public function change(string $name) : column_changer { 
         $i = Vec\first_key($this->cols, $x ==> $x->getName() === $name); 
+        $this->changedNames[] = $name; 
         return new column_changer($this, $name, $i);
     }
+
+
+    //
+    // Private test/debug
+    //
+
+    public function _getDeleted() : vec<string> { return $this->deletedNames; }
+    public function _getChanged() : vec<string> { return $this->changedNames; } 
 
 }
 

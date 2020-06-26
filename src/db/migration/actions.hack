@@ -1,6 +1,6 @@
 namespace catarini\db\migration\actions;
 
-use catarini\db\{ Database, TableCreatorBlock, TableChangerBlock  }; 
+use catarini\db\{ Database, TableCreatorBlock, TableChangerBlock, table_creator, table_changer  };  
 
 // These are the underlying classes that provide reversible functionality for the Migration API 
 // It's super boilerplate... super automatable... worth looking into 
@@ -29,6 +29,11 @@ class addTable extends Action {
     public function up() : void { $this->DB->addTable($this->name, $this->block); }
     public function down() : void { $this->DB->delTable($this->name); }
 
+    /*
+     * Private methods
+     */
+    public function _apply(table_creator $t) : void { ($this->block)($t); }
+
 }
 
 class changeTable extends Action { 
@@ -44,6 +49,8 @@ class changeTable extends Action {
 
     public function up() : void { $this->DB->changeTable($this->name, $this->block); }
 
+
+    public function _apply(table_changer $t) : void { ($this->block)($t); }
 }
 
 

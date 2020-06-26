@@ -83,7 +83,11 @@ class CONFIG {
 
 
         try { 
-            $cfg = TypeAssert\matches<database_mysql>($this->toml['database']);
+            $vec = TypeAssert\matches<vec<database_mysql>>($this->toml['database']);
+            if(\count($vec) == 0)throw new \catarini\exceptions\Config("`database` array is empty"); 
+            //TODO: Move this typa stuff to another function I think 
+
+            $cfg = $vec[0];
             return mysql\Database::PoolConnect($cfg['host'],  Shapes::idx($cfg, 'port', 3306),  $cfg['database'], $cfg['username'], $cfg['password']);
         }
         catch(\Exception $e) { 

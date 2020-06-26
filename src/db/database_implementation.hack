@@ -22,4 +22,9 @@ interface DatabaseInstance extends Database {
 
     // Schema version, etc
 
+    public function migrations_enabled()    : bool; 
+    public function migrations_enable()     : void; 
+    public function migrations_current()    : ?migration\MigrationVersion;
+    
+
 }

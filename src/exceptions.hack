@@ -12,3 +12,16 @@ namespace catarini {
     }
 
 }
+
+namespace catarini\exceptions { 
+
+    class Config extends \catarini\Exception { 
+        
+    }
+
+    class InconsistentState extends \catarini\Exception { 
+
+        
+    }
+
+}

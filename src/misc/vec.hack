@@ -51,7 +51,7 @@ function without<Tv>(Traversable<Tv> $traversable, int ...$key) : vec<Tv> {
     $i = -1;
     foreach($traversable as $x) { 
         $i++; 
-        if(\in_array($key, $i)) continue; 
+        if(\in_array($i, $key)) continue; 
         $res[] = $x; 
     }
 

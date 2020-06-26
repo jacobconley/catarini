@@ -4,6 +4,8 @@ namespace catarini\db;
 // uuuuhhh
 
 interface Database { 
+
+
     public function addTable(string $name, TableCreatorBlock $block) : this;
 
     public function changeTable(string $name, TableChangerBlock $block) : this; 

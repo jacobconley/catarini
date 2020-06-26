@@ -91,6 +91,7 @@ class Catarini {
 
     <<__Memoize>>
     public function db(?string $name = NULL) : Database { 
+        //TODO: Schema / migration validations
         return CONFIG::GET()->getDatabase($name); 
     }
 
