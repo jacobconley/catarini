@@ -81,8 +81,10 @@ class CLI {
                 switch($split[1]){
 
                     case 'migration':
-                    case 'project': 
+                        (new GenerateCommand())->migration( $split[2] ?? NULL ); 
+                        break; 
 
+                    case 'project': 
                         break; 
 
 

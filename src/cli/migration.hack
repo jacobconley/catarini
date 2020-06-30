@@ -2,10 +2,11 @@ namespace catarini\cli;
 
 use catarini\db; 
 use catarini\db\{ DatabaseInstance }; 
-use catarini\db\migration\{ MigrationController };
+use catarini\db\migration\{ MigrationController, ReversibleMigration };
 
 use HH\Lib\{ Vec }; 
 
+// Uh this should be renamed DatabaseCommands or something
 final class MigrationCommand { 
 
     private DatabaseInstance $DB; 
@@ -25,17 +26,34 @@ final class MigrationCommand {
     // up
     // down (rollback)
 
-    public function Up() : void { 
+    /**
+     *
+     */
+    public function Migrate(bool $forward) : void { 
         if(! $this->DB->migrations_enabled()) $this->DB->migrations_enable();
-
-        $delta = $this->controller->delta();
+        $current = $this->DB->migrations_current();
+        
+        $delta = $this->controller->delta(TRUE);
         if(\count($delta) == 0) { 
             echo "[-] The database is up-to-date; no work to be done.";
             return; 
         }
 
+        //TODO: Error handling in here?  
+        foreach($delta as $x) { 
+            $script = $this->controller->load($x); 
+            $name = $script->getName();
 
-        
+            if($forward)        $script->up();
+            else {
+                if($script is ReversibleMigration) $script->down();
+                else throw new \catarini\exceptions\InvalidOperation("Attempting to reverse non-reversable migration '$name'");
+            }
+        }
+
+        // TODO: Gotta update or remove the sql after this
+        // then output
+        // Schema loading?  
     }
 
 

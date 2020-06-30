@@ -42,7 +42,7 @@ class MigrationAutomaticTest extends Facebook\HackTest\HackTest {
 
     public function testLoad() : void 
     {
-        $x = new _migration_auto_1(_test_db()); 
+        $x = new _migration_auto_1(_test_db(), '_migration_auto_1'); 
         $x->load();
         $actions = $x->_getActions();
 

@@ -15,9 +15,13 @@ use catarini\db\migration\actions\Action;
 abstract class ManualMigration implements Database { 
 
     protected db\Database $DB;
-    public function __construct(Database $DB) { 
+    protected string $name;
+    public function __construct(Database $DB, string $name) { 
         $this->DB = $DB;
+        $this->name = $name; 
     }
+
+    public function getName() : string { return $this->name; }
 
     public function isReversible() : bool { return FALSE; }
 
@@ -54,7 +58,7 @@ abstract class AutomaticMigration extends ReversibleMigration
         foreach($this->Actions as $action) $action->up(); 
     }
     public function down() : void { 
-        if(! $this->reversible) throw new \catarini\Exception("Attempting to revert an irreversible migration"); 
+        if(! $this->reversible) throw new \catarini\Exception("Attempting to revert an irreversible migration '$this->name'"); 
         foreach($this->Actions as $action) $action->down(); 
     }
 

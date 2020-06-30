@@ -44,19 +44,41 @@ class MigrationController {
     }
 
 
-    public function delta() : vec<string> { 
+    /**
+     * Returns all of the migrations between the current one and the target
+     * @param $up TRUE if migrating forward, FALSE if rolling back
+     * @throws \catarini\exceptions\InconsistentState if a specified version does not exist
+     * @throws \catarini\exceptions\InvalidOperation if attempting a moot rollback         
+     */
+    public function delta(bool $up) : vec<string> { 
         $available = $this->available();
         $count = \count($available);
         if($count == 0) return vec[]; 
 
         $version = $this->DB->migrations_current();
-        if($version is null) return $available; // migration table exists, but none have been applied 
 
-        $migration = $version->after;  
-        $x = Vec\find_first_key($available, $x ==> $x === $migration); 
-        if($x is null) throw new \catarini\exceptions\InconsistentState("The current database version is unknown to Catarini.");
+        //TODO: What if a rollback comes across an irreversible migration? 
+        // It shouldn't proceed past it by default
+        // but how would that work with our versioning scheme 
+        
+        if($up || $version is null) { 
+            $target = $version ? $version->after : $available[$count-1];
 
-        return Vec\slice($available, $count - $x - 1); 
+            $x = Vec\find_first_key($available, $x ==> $x === $target); 
+            if($x is null) throw new \catarini\exceptions\InconsistentState("The current database version '$target' is unknown to Catarini.");
+            return Vec\slice($available, $count - $x - 1); 
+        }
+        else { 
+            if($version is null) throw new \catarini\exceptions\InvalidOperation("There is no migration to undo"); 
+
+            $ini = Vec\find_first_key($available, $x ==> $x === $version->after); 
+            $fin = Vec\find_first_key($available, $x ==> $x === $version->before); 
+            if($ini is null) throw new \catarini\exceptions\InconsistentState("The current version '$version->after' is unknown to Catarini."); 
+            if($fin is null) throw new \catarini\exceptions\InconsistentState("The previous version '$version->before' is unknown to Catarini.");
+            
+            return   Vec\slice($available, $fin,  $ini - $fin)  |>  Vec\reverse($$); 
+        }
+
     }
 
 

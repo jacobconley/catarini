@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "667b866aef80d4758e386fd03e8c33ff",
+    "content-hash": "7d1710855182b07b802fcb5d5bb21cb1",
     "packages": [
         {
             "name": "facebook/hack-codegen",

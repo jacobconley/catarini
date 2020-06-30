@@ -36,9 +36,16 @@ class CONFIG {
         $force = CONFIG::$_forced_root;
         if($force) return $force;         
 
+        $last = NULL; 
         $dir = \realpath($dir); 
-        if(\file_exists("$dir/.hhconfig"))      return $dir; 
-        else if($dir != '/')                    return CONFIG::getRoot("$dir/.."); 
+
+        while(TRUE) { 
+            if(\file_exists("$dir/.hhconfig")) $last = $dir; 
+            $dir = \realpath("$dir/.."); 
+            if($dir == '/') break;
+        }
+
+        if($last != NULL) { return $last; }
         else throw new \catarini\Exception("[!] Could not find root directory");
     }
 

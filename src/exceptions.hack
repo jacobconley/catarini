@@ -24,4 +24,12 @@ namespace catarini\exceptions {
         
     }
 
+    class InvalidOperation extends \catarini\Exception { 
+
+    }
+
+    class InvalidEnvironment extends \catarini\Exception { 
+        // Weird things like "trying to create /db directory but there's a regular file there named db"
+    }
+
 }
