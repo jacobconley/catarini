@@ -33,7 +33,7 @@ final class GenerateCommand {
         }
 
         $name = "migration$name$time";
-        $filename = "$name.hack"; 
+        $filename = "$name.hh"; 
         $filepath = "$dbdir/$filename";
         echo "[-] Creating $filepath\n";
 
