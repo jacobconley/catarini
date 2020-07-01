@@ -6,8 +6,7 @@ use catarini\db\migration\{ MigrationController, ReversibleMigration };
 
 use HH\Lib\{ Vec }; 
 
-// Uh this should be renamed DatabaseCommands or something
-final class MigrationCommand { 
+final class DatabaseCommand { 
 
     private DatabaseInstance $DB; 
     private MigrationController $controller;
@@ -18,7 +17,7 @@ final class MigrationCommand {
     }
 
     public static function connect(?string $name = NULL) : this { 
-        return new MigrationCommand(\catarini\meta\CONFIG::GET()->getDatabase($name));
+        return new DatabaseCommand(\catarini\meta\CONFIG::GET()->getDatabase($name));
     }
 
 

@@ -52,37 +52,44 @@ class MigrationController {
      */
     public function delta(bool $up) : vec<string> { 
         $available = $this->available();
+        $version = $this->DB->migrations_current();
+
+        return $this->_delta($up, $available, $version);
+    }
+    public function _delta(bool $up, vec<string> $available, ?MigrationVersion $version) : vec<string> { 
         $count = \count($available);
         if($count == 0) return vec[]; 
-
-        $version = $this->DB->migrations_current();
 
         //TODO: What if a rollback comes across an irreversible migration? 
         // It shouldn't proceed past it by default
         // but how would that work with our versioning scheme 
         
-        if($up || $version is null) { 
-            $target = $version ? $version->after : $available[$count-1];
+        if($up ) { 
+            if($version is null) return $available;
+
+            $target = $version->after;
 
             $x = Vec\find_first_key($available, $x ==> $x === $target); 
             if($x is null) throw new \catarini\exceptions\InconsistentState("The current database version '$target' is unknown to Catarini.");
-            return Vec\slice($available, $count - $x - 1); 
+            return Vec\slice($available, $x + 1); 
         }
         else { 
             if($version is null) throw new \catarini\exceptions\InvalidOperation("There is no migration to undo"); 
+
+            if($version->before is null) return Vec\reverse($available); // No previous version; roll back everything
 
             $ini = Vec\find_first_key($available, $x ==> $x === $version->after); 
             $fin = Vec\find_first_key($available, $x ==> $x === $version->before); 
             if($ini is null) throw new \catarini\exceptions\InconsistentState("The current version '$version->after' is unknown to Catarini."); 
             if($fin is null) throw new \catarini\exceptions\InconsistentState("The previous version '$version->before' is unknown to Catarini.");
             
-            return   Vec\slice($available, $fin,  $ini - $fin)  |>  Vec\reverse($$); 
+            return   Vec\slice($available, $fin + 1,  $ini - $fin)  |>  Vec\reverse($$); 
         }
-
     }
 
 
     // also, should error handling be standardized across the various CLI commands? probably 
+    // TODO: Namespacing here?? 
     public function load(string $migration) : ManualMigration
     { 
         // Reflection stuff here 

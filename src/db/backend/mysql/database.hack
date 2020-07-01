@@ -94,6 +94,7 @@ class Database implements db\DatabaseInstance {
 
     public function migrations_current() : ?MigrationVersion
     {
+        // Should we add logic for a DNE _migrations?  Idk it'll throw an error anyways 
         $query = "SELECT timestring FROM _migrations ORDER BY current DESC LIMIT 2"; 
 
         $res = Asio\join($this->conn->query($query)); 

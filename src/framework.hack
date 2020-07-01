@@ -1,7 +1,7 @@
 use catarini\routing\Router; 
 use catarini\PARTIAL; 
 use catarini\meta\CONFIG; 
-use catarini\db\Database; 
+use catarini\db\DatabaseInstance; 
 
 use namespace Facebook\{ TypeAssert, TypeCoerce };
 use HH\Lib\Dict; 
@@ -90,7 +90,7 @@ class Catarini {
     //
 
     <<__Memoize>>
-    public function db(?string $name = NULL) : Database { 
+    public function db(?string $name = NULL) : DatabaseInstance { 
         //TODO: Schema / migration validations
         return CONFIG::GET()->getDatabase($name); 
     }
