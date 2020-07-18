@@ -1,6 +1,7 @@
 namespace catarini\db;
 
 use HH\Lib\Vec; 
+use namespace Facebook\TypeAssert;
 
 enum Type : int { 
     INT         = 0;
@@ -14,6 +15,40 @@ enum Type : int {
     DATETIME    = 21; 
 
     UUID        = 30; 
+}
+
+function typeToString(Type $type) : string { 
+    switch($type) { 
+        case Type::INT:         return "INT";
+        case Type::NUMERIC:     return "NUMERIC";
+        case Type::REAL:        return "REAL";
+        case Type::STRING:      return "STRING";
+        case Type::TEXT:        return "TEXT";
+        case Type::TIMESTAMP:   return "TIMESTAMP";
+        case Type::DATETIME:    return "DATETIME";
+        case Type::UUID:        return "UUID";  
+    }     
+}
+
+function typeStrval(Type $type, mixed $value) : string { 
+    switch($type) { 
+        case Type::INT:
+        case Type::NUMERIC:
+        case Type::REAL:
+            return \strval($value); 
+
+        case Type::STRING:
+        case Type::TEXT:
+
+        case Type::UUID:
+        case Type::TIMESTAMP:
+        case Type::DATETIME: 
+
+            return '"'.TypeAssert\matches<string>($value).'"';
+
+
+        
+    }
 }
 
 class Column 
@@ -40,6 +75,17 @@ class Column
     public function isUnique() : bool { return $this->unique; }
 
     public function hasDefault() : bool { return $this->hasDefault; }
+
+    public function _str_default() : ?string { 
+        if(! $this->hasDefault()) return null; 
+        $def = $this->default; 
+        return $def is null ? 'null' : typeStrval($this->type, $def); 
+    }
+
+    public function _str_condition() : ?string { 
+        $x = $this->condition;
+        return $x ? "$x" : null; 
+    }
 
     //
     // API 

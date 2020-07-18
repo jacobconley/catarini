@@ -16,7 +16,7 @@ class SchemaTest extends Facebook\HackTest\HackTest {
 
     public function testTableCreator() : void 
     { 
-        $t = new table_creator();  
+        $t = new table_creator('testTableCreator');  
         $t->add('testint')->int()->nonnull(); 
         // Maybe add some more columns here once we get the other types in 
 
@@ -34,7 +34,7 @@ class SchemaTest extends Facebook\HackTest\HackTest {
 
     public function testTableChanger_del() : void 
     {
-        $t = new table_changer(vec[]); 
+        $t = new table_changer('testTableChanger_del', vec[]); 
         $t->add('testint')->int();
         $t->add('other')->int();
         $t->add('third')->int();
@@ -49,4 +49,7 @@ class SchemaTest extends Facebook\HackTest\HackTest {
     }
 
     //TODO: Test change column 
+
+
+    // Maybe test if schema loads w/ reflection?  that's a different usage lol
 }

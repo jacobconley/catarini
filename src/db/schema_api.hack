@@ -5,11 +5,21 @@ use HH\Lib\Vec;
 class table_creator { 
 
     protected vec<Column> $cols = vec[];
+    protected string $name; 
+
+    public function __construct(string $name, ?vec<Column> $cols = NULL) { 
+        $this->name = $name;
+        if($cols) $this->cols = $cols; 
+    }
 
     // maybe these should be private? to emphasize add(), the only thing that matters 
     public function getColumns() : vec<Column> { return $this->cols; }
     protected function getColumn(string $name) : Column { 
         return Vec\filter($this->cols, $x ==> $x->getName() === $name)[0];
+    }
+
+    public function getTable() : Table { 
+        return new Table($this->name, $this->cols); 
     }
 
     // These functions add columns and shit 
@@ -39,11 +49,6 @@ class table_creator {
 }
 
 class table_changer extends table_creator { 
-
-    public function __construct(vec<Column> $cols) {
-        $this->cols = $cols; 
-    }
-
 
     protected vec<string> $deletedNames = vec[]; 
         // We'll need this for migration API schtuf

@@ -12,6 +12,13 @@ interface Database {
 
     public function delTable(string $name) : this; 
 
+
+    /**
+     * Get a writer for the schema currently represented by this database; 
+     */ 
+     //TODO:  Do we even need this in the database?  I mean shit 
+    public function getSchemaWriter(string $dir) : migration\SchemaWriter;
+
     //TODO: Rename 
 
 }

@@ -2,7 +2,7 @@ namespace catarini\cli;
 
 use catarini\db; 
 use catarini\db\{ DatabaseInstance }; 
-use catarini\db\migration\{ MigrationController, ReversibleMigration };
+use catarini\db\migration\{ MigrationController, ReversibleMigration, SchemaWriter };
 
 use HH\Lib\{ Vec }; 
 
@@ -38,27 +38,27 @@ final class DatabaseCommand {
             return; 
         }
 
+        // TODO: Schema loading?  
+        // Will need to be done for the output 
+
         //TODO: Error handling in here?  
         foreach($delta as $x) { 
             $script = $this->controller->load($x); 
             $name = $script->getName();
 
-            if($forward)        $script->up();
-            else {
-                if($script is ReversibleMigration) $script->down();
-                else throw new \catarini\exceptions\InvalidOperation("Attempting to reverse non-reversable migration '$name'");
-            }
+            // Uncomment this when it's ready to go!
+
+            // if($forward)        $script->up();
+            // else {
+            //     if($script is ReversibleMigration) $script->down();
+            //     else throw new \catarini\exceptions\InvalidOperation("Attempting to reverse non-reversable migration '$name'");
+            // }
         }
 
-        // TODO: Gotta update or remove the sql after this
-        // then output
-        // Schema loading?  
-    }
-
-
-    //TODO: Determine which steps to take - how far behind current migration db is, or what can be rolled back
-
-    //TODO: Migration listing, loading functions 
+        //TODO: Dirs, make this retrievable from the migration controller?  I guess
+        // why even have a separate migration controller?  this will need to be documented
+        // $writer = $this->DB->getSchemaWriter($dir)
+    } 
 
 
     // Output section
@@ -68,7 +68,5 @@ final class DatabaseCommand {
     /*
         we'll need a spec somewhere... already have somewhat of an idea 
      */
-
-
 
 }

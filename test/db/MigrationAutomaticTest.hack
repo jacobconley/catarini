@@ -28,7 +28,7 @@ class _migration_auto_1 extends migration\AutomaticMigration {
 
 
     public static function changer() : table_changer { 
-        return new table_changer(vec[
+        return new table_changer('_migration_auto_1', vec[
             new Column(Type::INT, 'deleter'),
             new Column(Type::STRING, 'col')
         ]);
@@ -55,7 +55,7 @@ class MigrationAutomaticTest extends Facebook\HackTest\HackTest {
 
         // Creator test
 
-        $creator = new table_creator();
+        $creator = new table_creator('testLoad_create');
         ($actions[0] as actions\addTable)->_apply($creator); 
         
         $cols = $creator->getColumns();

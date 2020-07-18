@@ -1,12 +1,11 @@
 namespace catarini\db\backend\mysql; 
 
 use catarini\db; 
-use catarini\db\{ table_creator, table_changer, TableCreatorBlock, TableChangerBlock };
-use catarini\db\migration\MigrationVersion;
+use catarini\db\{ table_creator, table_changer, TableCreatorBlock, TableChangerBlock, Table };
+use catarini\db\migration\{ MigrationVersion, SchemaWriter };
 
-use HH\Lib\{ Str, Vec }; 
+use HH\Lib\{ Str, Vec, Regex }; 
 use HH\Asio;
-
 use Facebook\TypeAssert; 
 
 use AsyncMysqlConnection;
@@ -31,20 +30,33 @@ class Database implements db\DatabaseInstance {
     }
 
 
-
-    // Tables in the model
-    // For references in relationships
-    // TODO: Model here
-
     //TODO: Query logging?
+
+    //TODO: Gotta maintain the model here (list of tables, etc) (will need entity relationships later)
+    // Since we're doing everything using strings, not type safe, we'll have to make sure that no duplicates get in here
+    private vec<Table> $tables = vec[]; 
+
+    public function getSchemaWriter(string $dir) : SchemaWriter { 
+        return new SchemaWriter($this->tables, $dir);
+    }
 
 
     public function addTable(string $name, TableCreatorBlock $block) : this { 
+        $name = Str\lowercase($name); 
+        if(! Regex\matches($name, re"/[a-zA-Z0-9_]+/")) { 
+            throw new db\BadValueException("Invalid table name '$name'");
+        }
 
-        $thing = new table_creator(); 
+        // Register table 
+        if(Vec\find_first_key($this->tables, $x ==> $x->getName() === $name)) { 
+            throw new \catarini\exceptions\InvalidOperation("Duplicate table '$name'"); 
+        }
+
+        $thing = new table_creator($name); 
         $block($thing); 
         $cols = $thing->getColumns();
         //TODO: Validate columns (or, do this in the renderer)
+        // Maybe this should be a catchall thing 
 
         $query = "CREATE TABLE ".$this->conn->escapeString($name).' ';
 
@@ -52,6 +64,7 @@ class Database implements db\DatabaseInstance {
         $query .= Str\join($types, ', '); 
 
         Asio\join($this->conn->query($query));
+        $this->tables[] = $thing->getTable();
         return $this; 
     }
 
@@ -61,8 +74,16 @@ class Database implements db\DatabaseInstance {
     }
 
     public function delTable(string $name) : this { 
+        $key = Vec\find_first_key($this->tables, $x ==> $x->getName() === $name); 
+        if($key is null) { 
+            // DNE Exception??
+        }
+
+
         $query = "DELETE TABLE $name;";
+
         Asio\join($this->conn->query($query)); 
+        $this->tables = Vec\filter($this->tables, $x ==> $x->getName() != $name); 
         return $this; 
     }
 

@@ -89,10 +89,10 @@ class MigrationController {
 
 
     // also, should error handling be standardized across the various CLI commands? probably 
-    // TODO: Namespacing here?? 
     public function load(string $migration) : ManualMigration
     { 
-        // Reflection stuff here 
+        // TODO: Schema loading
+        // TODO: Namespacing 
 
         $classname  = "migration_$migration"; 
 

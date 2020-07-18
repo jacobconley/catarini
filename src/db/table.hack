@@ -1,16 +1,23 @@
-namespace catarini\db\schema;
+namespace catarini\db;
 
 use catarini\db\{ Column }; 
 
-interface TableSchema { 
-    
-}
+
+//TODO: How to handle primary keys?
+// This shit is getting out of hand fast
+// I reckon we'll have to restrict the schema classes to the active record model
+// or we just have Entities be a separate deal.  what a pain in the ass 
 
 
-abstract class Table { 
+class Table { 
     private vec<Column> $columns;
+    private string $name;
 
-    public function __construct(string $name, vec<Column> $columns) { 
+    public function getColumns() : vec<Column> { return $this->columns; }
+    public function getName() : string { return $this->name; }
+
+    public function __construct(string $name, vec<Column> $columns) {
+        $this->name = $name;  
         $this->columns = $columns;
     }
 }

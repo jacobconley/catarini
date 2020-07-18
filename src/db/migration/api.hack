@@ -5,6 +5,7 @@ use catarini\db\Database;
 use catarini\db\{ TableCreatorBlock, TableChangerBlock }; 
 use catarini\db\migration\actions;
 use catarini\db\migration\actions\Action; 
+use catarini\db\migration\SchemaWriter;
 
 /*
  * This wraps around schema\Database to provide a reversible class with the same API 
@@ -14,6 +15,10 @@ use catarini\db\migration\actions\Action;
 // maybe rename this irreversible migration
 abstract class ManualMigration implements Database { 
 
+    //TODO: We need schema in here
+    // needs to be passed to here from the IO command, probably loaded by the CLI before invoking that
+    // Time to revisit the DB connection as well 
+
     protected db\Database $DB;
     protected string $name;
     public function __construct(Database $DB, string $name) { 
@@ -22,6 +27,8 @@ abstract class ManualMigration implements Database {
     }
 
     public function getName() : string { return $this->name; }
+    public function getSchemaWriter(string $dir) : SchemaWriter { return $this->DB->getSchemaWriter($dir); }
+    
 
     public function isReversible() : bool { return FALSE; }
 

@@ -1,17 +1,19 @@
 namespace catarini {
 
     class Exception extends \Exception { 
-        private int $status;
-        public function getHttpStatus() : int { return $this->status; }
+        protected int $httpStatus;
+        public function getHttpStatus() : int { return $this->httpStatus; }
     
-        public function __construct(string $message, int $status = 500) { 
-            $this->status = $status; 
+        public function __construct(string $message, int $httpStatus = 500) { 
+            $this->httpStatus = $httpStatus; 
             parent::__construct($message); 
         }
 
     }
 
 }
+
+//TODO:  Move these shits to their appropriate namespaces, this is dumb 
 
 namespace catarini\exceptions { 
 
