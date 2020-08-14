@@ -24,17 +24,8 @@ class SchemaWriter {
         $this->dir = $dir; 
     }    
 
-    private bool $exists = FALSE; 
-    private function checkdir() : void { 
-        if($this->exists) return;
-        $this->exists = TRUE; 
 
-        //TODO: Code from GenerateCommand->migration(), i feel like it should be standardized
-    }
-
-
-
-    private function hackColumn(HackBuilder $cb, Column $col) : void { 
+    public function _hackColumn(HackBuilder $cb, Column $col) : void { 
         $type = $col->getType();
 
         $def = $col->_str_default();
@@ -50,20 +41,24 @@ class SchemaWriter {
         $cb->ensureNewLine();
     }
 
-    private function hackTable(HackBuilder $cb, Table $table) : void { 
+    public function _hackTable(HackBuilder $cb, Table $table) : void { 
         $cb->addf('new Table("%s", vec[', $table->getName());
         $cb->ensureNewLine();
         $cb->indent();
 
-        foreach($table->getColumns() as $col) $this->hackColumn($cb, $col);
+        foreach($table->getColumns() as $col) $this->_hackColumn($cb, $col);
 
         $cb->unindent();
-        $cb->add(']);');
+        $cb->add(']),');
+        $cb->ensureNewLine();
+        $cb->ensureEmptyLine();
     }
 
     public function writeHack(?string $namespace) : void { 
-
-        $path = $this->dir.'/schema.hack'; 
+        $dir = $this->dir; 
+        \catarini\util\ensure_dir($dir); 
+        $path = $dir.'schema.php';  //TODO: Change to .hack when updating codegen version?
+                                    // This oughtta be logged..
 
         echo "[-] Creating $path"; 
 
@@ -75,26 +70,35 @@ class SchemaWriter {
         $tables = $this->schema; // Eventually the schema will be wrapped
         
         $tbc = $hack->codegenHackBuilder();
-        foreach($tables as $table) $this->hackTable($tbc, $table);
+        foreach($tables as $table) $this->_hackTable($tbc, $table);
 
         
         $cg->useNamespace('catarini\db')
-            ->useType('Column')
+            ->useType('catarini\db\Table')
+            ->useType('catarini\db\Column')
+            ->useType('catarini\db\Type')
+
             ->addFunction(
-                $hack->codegenFunction('_db_schema()')
+                $hack->codegenFunction('_db_schema')
                     ->setReturnType('db\Schema')
                     ->setBody(
 
                         $hack->codegenHackBuilder()
                             ->add('return vec[')
                             ->ensureNewLine()
+                            ->ensureEmptyLine()
+
                             ->indent()
                             ->add($tbc->getCode())
                             ->unindent()
+                            ->ensureNewLine()
+
                             ->add('];')
                             ->getCode()
                     )
-            );
+        );
+
+        $cg->save();
     }
 
 }

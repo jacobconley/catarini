@@ -21,16 +21,8 @@ final class GenerateCommand {
         $root   = $this->root; 
         $time   = '_'.\strval(\time()); 
         $dbdir  = "$root/db";
+        \catarini\util\ensure_dir($dbdir); 
         
-        if(!\is_dir($dbdir)) {
-            if(\file_exists($dbdir)) { 
-                throw new \catarini\exceptions\InvalidEnvironment("Trying to create `db` directory, but there exists a file of the same name"); 
-            }
-            else { 
-                echo "[-] Creating directory $dbdir\n"; 
-                \mkdir($dbdir); 
-            }
-        }
 
         $name = "migration$name$time";
         $filename = "$name.hh"; 

@@ -1,4 +1,6 @@
 vendor/
-test.hack
 
+test/env/output/
+
+test.hack
 deploy
