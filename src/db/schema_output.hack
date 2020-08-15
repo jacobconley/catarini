@@ -60,7 +60,7 @@ class SchemaWriter {
         $path = $dir.'schema.php';  //TODO: Change to .hack when updating codegen version?
                                     // This oughtta be logged..
 
-        echo "[-] Creating $path"; 
+        echo "[-] Writing $path\n"; 
 
         $hack = new HackCodegenFactory(new HackCodegenConfig()); 
         $cg = $hack->codegenFile($path);

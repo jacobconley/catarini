@@ -1,0 +1,22 @@
+#!/bin/bash 
+
+if [ ! -f 'hh_autoload.json' ]; then 
+    echo '[!] This must be run from the project root! (sorry)'
+    exit 1 
+fi 
+
+default="test/"
+sourcepath=${*-$default}
+
+echo '--- Preparing for tests...'
+hh_client                       && \
+    vendor/bin/hh-autoload      && \
+    echo '--- Done.  Generating fixtures, if applicable...' && \
+    hhvm test-fixture/codegen.hack && \
+\
+    echo '--- Done.  Running tests...' && \
+    vendor/bin/hacktest $sourcepath
+
+exit $?    
+
+# Reckon i'll make a fixture generation script?  
