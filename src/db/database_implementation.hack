@@ -27,4 +27,6 @@ interface DatabaseInstance extends Database {
     public function migrations_current()    : ?migration\MigrationVersion;
     
 
+    public function entity_out(Schema $schema, string $dir, ?string $namespace = NULL) : void; 
+
 }

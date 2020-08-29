@@ -2,15 +2,11 @@ namespace catarini\db;
 
 use Facebook\TypeAssert\TypeAssert;
 
-class query_factory { 
 
-
-}
-
-// Tm - Model sublcass
+// Tm - entity sublcass
 // Tcol - column enum (this should be as string) 
 
-class Query<Tm, Tcol> { 
+class EntityQuery<Tm, Tcol> { 
 
 
     protected Tm $parent; 
@@ -46,11 +42,13 @@ class Query<Tm, Tcol> {
      * Type safety for these stuffs?
      * We could use an enum, but
      * - that would be inconvenient
-     * - it would (probably?) require separate subclasses for each model
+     * - it would (probably?) require separate subclasses for each entity
      * - - unless we used generics for this?????? oowoowahwoh
      * - - - then how to get column name back from enumm...
      * - - - AS STRING??? ENUM AS STRING? this is allowed
      */
+
+    // So, I think we are doing this 
 
     protected vec<(Tcol, bool)> $orderings = vec[]; 
     public function order_by(Tcol $column, bool $ascending = TRUE) : this { 
@@ -61,7 +59,7 @@ class Query<Tm, Tcol> {
 
 
 
-    // Finalizers
+    // Accessors
     // These return resULTS 
     // public async function first() : Awaitable<Tm> { return $this->DB->queryFirst<Tm, Tcol>($this);  } 
 }

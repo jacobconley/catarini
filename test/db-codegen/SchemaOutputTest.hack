@@ -21,4 +21,10 @@ class SchemaOutputTest extends Facebook\HackTest\HackTest {
         expect($cols[0]->getName())->toBeSame('test'); 
     }
 
+
+
+    // public function testEntities() : void { 
+
+    // }
+
 }

@@ -1,7 +1,7 @@
 namespace catarini\db\backend\mysql; 
 
 use catarini\db; 
-use catarini\db\{ table_creator, table_changer, TableCreatorBlock, TableChangerBlock, Table };
+use catarini\db\{ table_creator, table_changer, TableCreatorBlock, TableChangerBlock, Table, Schema };
 use catarini\db\migration\{ MigrationVersion, SchemaWriter };
 
 use HH\Lib\{ Str, Vec, Regex }; 
@@ -126,6 +126,11 @@ class Database implements db\DatabaseInstance {
         $prv = $res->numRows() == 2 ? $vec[1][0] : NULL; 
 
         return new MigrationVersion(TypeAssert\not_null($cur), $prv);
+    }
+
+
+    public function entity_out(Schema $schema, string $dir, ?string $namespace = NULL) : void { 
+        entity_out($schema, $dir, $namespace); 
     }
 
 }

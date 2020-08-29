@@ -8,6 +8,8 @@ fi
 default="test/"
 sourcepath=${*-$default}
 
+# Ruh roh!  Should autoload AFTER generating fixtures!
+
 echo '--- Preparing for tests...'
 hh_client                       && \
     vendor/bin/hh-autoload      && \

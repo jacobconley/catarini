@@ -12,3 +12,5 @@ function ensure_dir(string $dir) : void
             }
         }
 }
+
+// Maybe make this with file? 

@@ -1,55 +1,11 @@
 namespace catarini\db;
 
 use HH\Lib\Vec; 
+
 use namespace Facebook\TypeAssert;
+use namespace Facebook\TypeCoerce;
+use Facebook\HackCodegen\{ IHackBuilderValueRenderer, IHackCodegenConfig };
 
-enum Type : int { 
-    INT         = 0;
-    NUMERIC     = 1;
-    REAL        = 2; 
-
-    STRING      = 10;
-    TEXT        = 12;
-
-    TIMESTAMP   = 20;
-    DATETIME    = 21; 
-
-    UUID        = 30; 
-}
-
-function typeToString(Type $type) : string { 
-    switch($type) { 
-        case Type::INT:         return "INT";
-        case Type::NUMERIC:     return "NUMERIC";
-        case Type::REAL:        return "REAL";
-        case Type::STRING:      return "STRING";
-        case Type::TEXT:        return "TEXT";
-        case Type::TIMESTAMP:   return "TIMESTAMP";
-        case Type::DATETIME:    return "DATETIME";
-        case Type::UUID:        return "UUID";  
-    }     
-}
-
-function typeStrval(Type $type, mixed $value) : string { 
-    switch($type) { 
-        case Type::INT:
-        case Type::NUMERIC:
-        case Type::REAL:
-            return \strval($value); 
-
-        case Type::STRING:
-        case Type::TEXT:
-
-        case Type::UUID:
-        case Type::TIMESTAMP:
-        case Type::DATETIME: 
-
-            return '"'.TypeAssert\matches<string>($value).'"';
-
-
-        
-    }
-}
 
 class Column 
 { 
@@ -76,6 +32,17 @@ class Column
 
     public function hasDefault() : bool { return $this->hasDefault; }
 
+
+
+    //
+    // Rendering code
+    //
+    
+    /* Idk this shit has to be organized
+        But all of this is used by l'Entity Output 
+     */
+
+
     public function _str_default() : ?string { 
         if(! $this->hasDefault()) return null; 
         $def = $this->default; 
@@ -87,6 +54,35 @@ class Column
         return $x ? "$x" : null; 
     }
 
+    public function _str_HackType() : string { 
+        $type = typeToHackType($this->type); 
+        return  $this->isNullable() ? "?$type" : $type; 
+    }
+
+
+    public function __column_renderer() : __column_renderer { 
+        return new __column_renderer();
+    }
+
+
+    /**
+     * veeeery unsafe way to generate type conversions 
+     */
+    public function __sql_val_call(string $operand) : string { 
+        $fn_name = $this->isNullable() ? '__sql_val_opt' : '__sql_val'; 
+        $type_hack = type\to_hack_type($this->getType());
+
+        $type_enum = type\to_string($this->getType());
+        $type_enum = "Type::$type_enum"; 
+
+        $colname = $this->getName(); 
+
+        //TODO: Support defaults here
+        //TODO: How defaults will be entered?  as type-safe?  idfk man
+        return "$fn_name<$type_hack>($type_enum, '$colname', $operand, NULL)";
+    }
+
+    
     //
     // API 
     //
@@ -119,4 +115,13 @@ class Column
         if(!($this->nullable) && $this->hasDefault && $this->default is null) throw new \LogicException("Non-nullable column has null default"); 
     }
 
+
+
+}
+
+
+
+// Unsafe renderer
+class __column_renderer implements IHackBuilderValueRenderer<string> { 
+    public function render(IHackCodegenConfig $config, string $input) : string { return $input; }
 }
