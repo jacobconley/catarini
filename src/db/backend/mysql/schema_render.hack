@@ -1,7 +1,8 @@
 namespace catarini\db\backend\mysql; 
 
 use catarini\db;
-use catarini\db\{ Column, ColumnFactory, Type };
+use catarini\db\{ Type };
+use catarini\db\schema\{ Column };
 
 use AsyncMysqlConnection;
 

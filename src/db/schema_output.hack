@@ -10,7 +10,7 @@ use Facebook\HackCodegen\{
 
 use HH\Lib\{ Vec };
 
-use catarini\db\{ Schema, Table, Column }; 
+use catarini\db\schema\{ Schema, Table, Column }; 
 use function catarini\db\typeToString;
 
 
@@ -74,13 +74,12 @@ class SchemaWriter {
 
         
         $cg->useNamespace('catarini\db')
-            ->useType('catarini\db\Table')
-            ->useType('catarini\db\Column')
             ->useType('catarini\db\Type')
+            ->useType('catarini\db\schema\{ Table, Column, Schema }')
 
             ->addFunction(
                 $hack->codegenFunction('_db_schema')
-                    ->setReturnType('db\Schema')
+                    ->setReturnType('Schema')
                     ->setBody(
 
                         $hack->codegenHackBuilder()

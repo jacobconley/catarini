@@ -1,6 +1,4 @@
-namespace catarini\db;
-
-use catarini\db\{ Column }; 
+namespace catarini\db\schema;
 
 
 //TODO: How to handle primary keys?

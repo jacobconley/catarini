@@ -2,7 +2,7 @@ namespace catarini\db\backend\mysql;
 
 
 use catarini\db; 
-use catarini\db\{ Schema };
+use catarini\db\schema\{ Schema };
 
 use HH\Lib\{ Vec, Str }; 
 
@@ -77,9 +77,9 @@ function entity_out(Schema $schema, string $dir, ?string $namespace = NULL) : vo
 
         $file
             ->useNamespace('catarini\db')
-            ->useType('catarini\db\Table')
-            ->useType('catarini\db\Column')
             ->useType('catarini\db\Type')
+            ->useType('catarini\db\schema\Table')
+            ->useType('catarini\db\schema\Column')
             ->useType('catarini\db\querying\Entity')
             ->useType('catarini\db\querying\EntityQuery')
 
@@ -104,7 +104,7 @@ function entity_out(Schema $schema, string $dir, ?string $namespace = NULL) : vo
 
 
                     // Columns, rendered as instance properties 
-                    ->addProperties($table->getColumns() |> Vec\map($$, $col ==> {
+                    ->addProperties(  $table->getColumns() |> Vec\map($$, $col ==> {
                         $prop = new CodegenProperty($hack_config, $col->getName());
                         $prop->setType($col->_str_HackType());
 

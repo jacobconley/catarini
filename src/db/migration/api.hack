@@ -2,7 +2,7 @@ namespace catarini\db\migration;
 
 use catarini\db;
 use catarini\db\Database;
-use catarini\db\{ TableCreatorBlock, TableChangerBlock }; 
+use catarini\db\schema\{ TableCreatorBlock, TableChangerBlock }; 
 use catarini\db\migration\actions;
 use catarini\db\migration\actions\Action; 
 use catarini\db\migration\SchemaWriter;

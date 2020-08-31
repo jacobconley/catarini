@@ -1,7 +1,7 @@
 namespace catarini\db\backend\mysql; 
 
 use catarini\db; 
-use catarini\db\{ table_creator, table_changer, TableCreatorBlock, TableChangerBlock, Table, Schema };
+use catarini\db\schema\{ table_creator, table_changer, TableCreatorBlock, TableChangerBlock, Table, Schema };
 use catarini\db\migration\{ MigrationVersion, SchemaWriter };
 
 use HH\Lib\{ Str, Vec, Regex }; 

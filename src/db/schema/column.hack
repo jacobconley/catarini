@@ -1,4 +1,7 @@
-namespace catarini\db;
+namespace catarini\db\schema;
+
+use catarini\db\Type as dbType; 
+use namespace catarini\db\type;
 
 use HH\Lib\Vec; 
 
@@ -10,8 +13,8 @@ use Facebook\HackCodegen\{ IHackBuilderValueRenderer, IHackCodegenConfig };
 class Column 
 { 
     protected string $name;
-    protected Type $type;
-    public function __construct(Type $type, string $name) { 
+    protected dbType $type;
+    public function __construct(dbType $type, string $name) { 
         $this->name = $name;
         $this->type = $type; 
     }
@@ -25,7 +28,7 @@ class Column
     protected   mixed        $default; 
 
     public function getName() : string { return $this->name; }
-    public function getType() : Type { return $this->type; }
+    public function getType() : dbType { return $this->type; }
 
     public function isNullable() : bool { return $this->nullable; }
     public function isUnique() : bool { return $this->unique; }
@@ -46,7 +49,7 @@ class Column
     public function _str_default() : ?string { 
         if(! $this->hasDefault()) return null; 
         $def = $this->default; 
-        return $def is null ? 'null' : typeStrval($this->type, $def); 
+        return $def is null ? 'null' : type\to_hack_literal($this->type, $def); 
     }
 
     public function _str_condition() : ?string { 
@@ -55,7 +58,7 @@ class Column
     }
 
     public function _str_HackType() : string { 
-        $type = typeToHackType($this->type); 
+        $type = type\to_hack_type($this->type); 
         return  $this->isNullable() ? "?$type" : $type; 
     }
 

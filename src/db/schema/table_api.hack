@@ -1,4 +1,6 @@
-namespace catarini\db; 
+namespace catarini\db\schema;
+
+use catarini\db\Type; 
 
 use HH\Lib\Vec; 
 

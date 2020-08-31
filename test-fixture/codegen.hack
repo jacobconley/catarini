@@ -1,6 +1,7 @@
 require_once __DIR__.'/../vendor/hh_autoload.hh'; 
 
-use catarini\db\{ Table, Column, Type, Schema }; 
+use catarini\db\{ Type };
+use catarini\db\schema\{ Table, Column, Schema }; 
 use catarini\db\migration\SchemaWriter;
 use catarini\db\backend\mysql; 
 

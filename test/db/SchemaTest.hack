@@ -1,4 +1,5 @@
-use catarini\db\{ Database, Column, Type, table_creator, table_changer }; 
+use catarini\db\{ Database, Type };
+use catarini\db\schema\{ Column, table_creator, table_changer }; 
 
 use function Facebook\FBExpect\expect; 
 

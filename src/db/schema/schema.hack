@@ -1,4 +1,4 @@
-namespace catarini\db; 
+namespace catarini\db\schema;
 
 type Schema = vec<Table>;
 

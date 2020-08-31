@@ -2,13 +2,13 @@
 /**
  * This file is generated. Do not modify it manually!
  *
- * @generated SignedSource<<1fbdd554af0a3f261c8e4412cf291885>>
+ * @generated SignedSource<<c1251d17937e8f12af875264a9d9b6e6>>
  */
 namespace _catarini_test;
 use namespace catarini\db;
-use type catarini\db\Table;
-use type catarini\db\Column;
 use type catarini\db\Type;
+use type catarini\db\schema\Table;
+use type catarini\db\schema\Column;
 use type catarini\db\querying\Entity;
 use type catarini\db\querying\EntityQuery;
 use function catarini\db\type\__sql_val;

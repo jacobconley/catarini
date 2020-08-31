@@ -17,6 +17,11 @@ namespace catarini\db {
         UUID        = 30; 
     }
 
+
+    //
+    // I believe the below 3 functions are to be removed, replaced by their db\type counterparts at the end of the file 
+    //
+
     // Enum name as string.  Can we just do `$enum as string`  ?? 
     function typeToString(Type $type) : string { 
         switch($type) { 

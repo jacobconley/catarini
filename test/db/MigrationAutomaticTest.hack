@@ -1,6 +1,7 @@
+use catarini\db\{ Type };
 use catarini\db\migration;
 use catarini\db\migration\actions; 
-use catarini\db\{ table_creator, table_changer, Column, Type };
+use catarini\db\schema\{ table_creator, table_changer, Column };
 
 use function Facebook\FBExpect\expect;
 
