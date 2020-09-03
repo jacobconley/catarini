@@ -75,7 +75,7 @@ class Column
         $fn_name = $this->isNullable() ? '__sql_val_opt' : '__sql_val'; 
         $type_hack = type\to_hack_type($this->getType());
 
-        $type_enum = type\to_string($this->getType());
+        $type_enum = type\to_enum($this->getType());
         $type_enum = "Type::$type_enum"; 
 
         $colname = $this->getName(); 

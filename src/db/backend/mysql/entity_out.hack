@@ -151,6 +151,14 @@ function entity_out(Schema $schema, string $dir, ?string $namespace = NULL) : vo
 
                     )
 
+
+
+                    //TODO: 
+                    /*
+                        * ::q($id) 
+                        * ->__cols($prefix) ? Or is that not helpful in codegen  
+                     */
+
             )
 
         

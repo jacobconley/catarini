@@ -7,7 +7,8 @@ abstract class Entity
     public abstract function save()     : void; 
     public abstract function del()      : void; 
 
-    protected mixed     $primary_key; 
+    // protected mixed     $primary_key; 
+
 
     protected Database  $DB;
     protected function __construct(Database $DB) { 
@@ -31,5 +32,9 @@ abstract class Entity
     //     return Str\join($cols, ', ');
 
     // }
+
+
+    // private string $table;
+    // public function __table() : string { return $this->table; }
 
 }

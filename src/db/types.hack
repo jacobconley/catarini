@@ -84,7 +84,7 @@ namespace catarini\db\type {
     use catarini\db\Type; 
     use catarini\db\BadValueException;
 
-    function to_string(Type $type) : string { 
+    function to_enum(Type $type) : string { 
         switch($type) { 
             case Type::INT:         return "INT";
             case Type::NUMERIC:     return "NUMERIC";
@@ -116,7 +116,6 @@ namespace catarini\db\type {
         }
     }
 
-
     function to_hack_type(Type $type) : string { 
         switch($type) { 
             case Type::INT:
@@ -139,6 +138,7 @@ namespace catarini\db\type {
                 return "\\DateTime";
         }
     }
+
 
 
 
