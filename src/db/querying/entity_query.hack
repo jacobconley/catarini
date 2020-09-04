@@ -7,16 +7,42 @@ use HH\Lib\{ Vec };
 
 
 
+final class EntityQueryTarget { 
+    public Table        $target;
+    public ?Table       $joined; 
+    public ?this        $intermediate; 
+
+    public function __construct(Table $target) { 
+        $this->target = $target;
+    }
+
+    public function join(Table $join) : this { 
+        $this->joined = $join;
+        return $this; 
+    }
+
+    public function join_through(Table $target, Table $intermediate) : this { 
+        $this->join($intermediate); 
+        $this->intermediate = (new EntityQueryTarget($intermediate))->join($target); 
+        return $this; 
+    }
+}
+
 type joinlist = vec<EntityQuery<Entity>>;
+
 
 // Tm - entity sublcass
 // Tcol - column enum (this should be as string) - Scrapped for now
 abstract class EntityQuery<Tm as Entity> { 
 
+    protected EntityQueryTarget $info; 
+    protected joinlist $preceding;
 
-    public function __construct(Tm $parent) { 
-
+    public function __construct(EntityQueryTarget $target, joinlist $previous = vec[]) { 
+        $this->info = $target;
+        $this->preceding = $previous; 
     }
+
 
 
     // Previous queries that have been joined with this one
@@ -58,6 +84,11 @@ abstract class EntityQuery<Tm as Entity> {
     private vec<Condition> $conditions = vec[]; 
     protected function getConditions() : vec<Condition> { return $this->conditions; }
     protected function addCondition(Condition $c) : void  { $this->conditions[] = $c; }
+
+    public function __condition_pk(mixed $primary) : void { 
+        $this->addCondition(new Condition($this->info->target->getPrimaryColumn(), $primary, '='));
+    }
+
     // Currently: 
     /* 
         - We codegen where_x...() methods into each generated query subtype 

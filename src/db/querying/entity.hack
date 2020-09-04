@@ -1,13 +1,11 @@
 namespace catarini\db\querying;
 
-use catarini\db\{ Database, Schema };
+use catarini\db\{ Database };
 
 abstract class Entity 
 {
     public abstract function save()     : void; 
     public abstract function del()      : void; 
-
-    // protected mixed     $primary_key; 
 
 
     protected Database  $DB;

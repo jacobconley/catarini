@@ -1,21 +1,35 @@
 namespace catarini\db\schema;
 
-
-//TODO: How to handle primary keys?
-// This shit is getting out of hand fast
-// I reckon we'll have to restrict the schema classes to the active record model
-// or we just have Entities be a separate deal.  what a pain in the ass 
-
+use catarini\db\Type;
+use catarini\db\schema\Column; 
+use HH\Lib\{ Vec, Str };
 
 class Table { 
-    private vec<Column> $columns;
     private string $name;
+    private vec<Column> $columns;
+    private string $primary;
 
-    public function getColumns() : vec<Column> { return $this->columns; }
     public function getName() : string { return $this->name; }
+    public function getColumns() : vec<Column> { return $this->columns; }
+    public function getPrimaryKey() : string { return $this->primary; }
+    public function getPrimaryColumn() : Column { 
+        return Vec\first_key($this->columns, $x ==> $x->getName() === $this->primary) |> $this->columns[$$];
+    }
 
-    public function __construct(string $name, vec<Column> $columns) {
+    public function __construct(string $name, vec<Column> $columns, ?string $primary_key = NULL) {
         $this->name = $name;  
-        $this->columns = $columns;
+
+        $columns = $columns; 
+        if($primary_key is null) { 
+            // the $primary_key default null should probably be removed.  this is dev laziness to migrate existing tests 
+            $primary_key = \HH\Lib\Str\format("%s_id", $name);
+            $this->primary = $primary_key;
+            $this->columns = Vec\concat(vec[new Column(Type::INT, $primary_key)], $columns);
+        }
+        else {
+            $this->primary = $primary_key;
+            $this->columns = $columns;
+        }
+
     }
 }

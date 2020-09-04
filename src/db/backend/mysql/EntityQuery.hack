@@ -1,7 +1,7 @@
 namespace catarini\db\backend\mysql; 
 
 use catarini\db\querying;
-use catarini\db\querying\{ Entity };
+use catarini\db\querying\{ Entity, EntityQueryTarget };
 
 use HH\Lib\{ Vec, Str };
 use Facebook\{ TypeAssert, TypeCoerce };
@@ -61,75 +61,30 @@ class Condition extends querying\Condition {
 
 
 
-final class EntityQueryInfo { 
 
-    private string $table;
-    private string $table_key; 
-    private vec<string> $table_cols; 
-
-    public function table() : string { return $this->table_key; }
-    public function table_key() : string { return $this->table_key; }
-    public function table_cols() : vec<string> { return $this->table_cols; }
-
-
-    private ?string $join_table; 
-    private ?string $join_key;
-
-    public function isJoined()      : bool { return $this->join_table is nonnull; }
-    public function join_table()    : string { return TypeAssert\not_null($this->join_table); }
-    public function join_key()      : string { return TypeAssert\not_null($this->join_key); }
-
-    private ?EntityQueryInfo $intermediate;
-    public function getIntermediate() : ?EntityQueryInfo { return $this->intermediate; }
-
-
-    // JOIN table ON table.table_key = join_table.join_key
-    public function __construct(string $table, string $table_key, vec<string> $table_cols, ?string $join_table, ?string $join_key, ?EntityQueryInfo $intermediate) { 
-        $this->table        = $table;
-        $this->table_key    = $table_key;
-        $this->table_cols   = $table_cols;
-        $this->join_table   = $join_table;
-        $this->join_key     = $join_key;
-        $this->intermediate = $intermediate; 
-    }    
-}
-
-
-
-
-type joinlist = vec<EntityQuery<Entity>>;
 
 
 class EntityQuery<Tm as Entity> extends querying\EntityQuery<Tm> 
 { 
 
-    private EntityQueryInfo $info;
-    protected joinlist $preceding;
-
-    public function __construct(Tm $parent, EntityQueryInfo $info, joinlist $previous = vec[]) { 
-        parent::__construct($parent); 
-        $this->preceding = $previous; 
-        $this->info = $info; 
-    }
 
 
     //
     // The main query building logic is here (whew!) 
     //
 
-    // Reference: https://dev.mysql.com/doc/refman/8.0/en/select.html
-    //  https://en.wikipedia.org/wiki/SQL_syntax
-    private function genquery(ACTION $action) : string {
 
-        $queries        = $this->preceding;
-        $queries[]      = $this; 
 
-        $tables         = vec<EntityQueryInfo>[]; 
+    //
+    // FROM clause
+    //
+    public function __FROM() : string { 
+        $tables         = vec<EntityQueryTarget>[]; 
         $table_names    = vec<string>[]; 
         foreach($this->preceding as $tbl) { 
             $info = $tbl->info;
-            $name = $info->table();
-            $intermediate = $info->getIntermediate();
+            $name = $info->target->getName();
+            $intermediate = $info->intermediate;
 
             // This will probably be replaced by aliasing logic 
             if(\in_array($name, $table_names)) { 
@@ -141,34 +96,39 @@ class EntityQuery<Tm as Entity> extends querying\EntityQuery<Tm>
             $tables[] = $info;
             if($intermediate is nonnull) $tables[] = $intermediate;
         }
-        $this_table = $tables[ \count($tables) - 1 ];
 
-
-
-
-        //
-        // FROM clause
-        //
+        $this_step = $tables[ \count($tables) - 1 ];
 
         // assuming $tables always contains at least one
-        $FROM = Str\format("FROM %s\n", $this_table->table());
+
+        $FROM = Str\format("FROM %s\n", $this_step->target->getName());
+        
         for($i = 1; $i < \count($tables); $i++) { 
-            $tbl = $tables[$i];
-            $cur_table      = $tbl->table();
-            $cur_key        = $tbl->table_key();
-            $join_table     = $tbl->join_table();
-            $join_key       = $tbl->join_key();
+            $step   = $tables[$i];
+            $tbl        = $step->target;
+            $joined     = TypeAssert\not_null($step->joined);
+            $cur_table      = $tbl->getName();;
+            $cur_key        = $tbl->getPrimaryKey();;
+            $join_table     = $joined->getName();
+            $join_key       = $joined->getPrimaryKey();
 
             // Aliasing could eventually be implemented here 
             $FROM .= "JOIN $cur_table ON $cur_table.$cur_key = $join_table.$join_key\n";
         }
-        
+
+        return $FROM; 
+    }
 
 
-        //
-        // WHERE clause
-        //
 
+
+
+    //
+    // WHERE clause
+    //
+    public function __WHERE() : ?string { 
+        $queries        = $this->preceding;
+        $queries[]      = $this; 
 
 
         $WHERE          = NULL; 
@@ -191,20 +151,32 @@ class EntityQuery<Tm as Entity> extends querying\EntityQuery<Tm>
                     |> Str\join($$, '');
         }
 
-
-        //TODO: All the other shit in EntityQuery 
-
-        switch($action) { 
-            case ACTION::SELECT:
-                $sel = prefix($this_table->table(), $this_table->table_cols()); 
-                $query = "SELECT $sel\nFROM $FROM";
-
-                if($WHERE) $query .= $WHERE;
-
-                return $query; 
-
-        }
+        return $WHERE; 
     }
+
+
+
+    // Reference: https://dev.mysql.com/doc/refman/8.0/en/select.html
+    //  https://en.wikipedia.org/wiki/SQL_syntax
+    // private function genquery(ACTION $action) : string {
+
+    //     $FROM = $this->__FROM();
+    //     $WHERE = $this->__WHERE();
+
+
+    //     //TODO: All the other shit in EntityQuery 
+
+    //     switch($action) { 
+    //         case ACTION::SELECT:
+    //             $sel = prefix($this_table->getTable(), $this_table->table_cols()); 
+    //             $query = "SELECT $sel\nFROM $FROM";
+
+    //             if($WHERE) $query .= $WHERE;
+
+    //             return $query; 
+
+    //     }
+    // }
 
 
 
