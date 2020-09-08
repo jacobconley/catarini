@@ -9,21 +9,43 @@ use HH\Lib\{ Vec };
 
 final class EntityQueryTarget { 
     public Table        $target;
+
     public ?Table       $joined; 
-    public ?this        $intermediate; 
+    public ?string      $joined_key; 
+
+    public ?this        $intermediate;
+
+    public function getTarget() : Table { return $this->target; }
+    public function getIntermediate() : ?this { return $this->intermediate; }
 
     public function __construct(Table $target) { 
         $this->target = $target;
     }
 
-    public function join(Table $join) : this { 
-        $this->joined = $join;
+
+
+    public function isJoined() : bool { return ($this->joined is nonnull); }
+    public function getJoin() : (Table, string) { 
+        $tbl = $this->joined;
+        $key = $this->joined_key; 
+        if($tbl is nonnull && $key is nonnull) return tuple($tbl, $key);
+        else throw new \catarini\exceptions\InconsistentState("Bad join state"); // lol this message sucks 
+    }                       
+
+
+    // "joined" table is the "child" or "owned" object - the one that contains the reference to the other table
+    // i.e. the query will be rendered 
+    //      JOIN $target.primary_key = $joined.joined_key 
+
+    public function join(Table $join, string $join_key) : this { 
+        $this->joined       = $join;
+        $this->joined_key   = $join_key;
         return $this; 
     }
 
-    public function join_through(Table $target, Table $intermediate) : this { 
-        $this->join($intermediate); 
-        $this->intermediate = (new EntityQueryTarget($intermediate))->join($target); 
+    public function join_through(Table $intermediate, Table $end, string $this_key, string $end_key) : this { 
+        $this->join($intermediate, $this_key); 
+        $this->intermediate = (new EntityQueryTarget($end))->join($intermediate, $end_key);
         return $this; 
     }
 }
@@ -86,7 +108,8 @@ abstract class EntityQuery<Tm as Entity> {
     protected function addCondition(Condition $c) : void  { $this->conditions[] = $c; }
 
     public function __condition_pk(mixed $primary) : void { 
-        $this->addCondition(new Condition($this->info->target->getPrimaryColumn(), $primary, '='));
+        $tbl = $this->info->target;
+        $this->addCondition(new Condition($tbl, $tbl->getPrimaryColumn(), $primary, '='));
     }
 
     // Currently: 

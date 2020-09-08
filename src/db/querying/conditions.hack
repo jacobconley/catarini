@@ -26,7 +26,7 @@ type ConditionalOperator = string; // maybe string-ish enum some day?  if conven
 
 class Condition { 
 
-    // maybe this shouldnt be Column... unless we're commited to having a statically-available schema instance
+    private     Table                       $tbl; 
     private     Column                      $col;
     private     mixed                       $val; 
     private     ConditionalOperator         $op; 
@@ -34,12 +34,14 @@ class Condition {
     //TODO: Conjunctions and disjunctions (ANDs and ORs)?
 
 
+    public function getTable() : Table { return $this->tbl; }
     public function getColumn() : Column { return $this->col; }
     public function getValue() : mixed { return $this->val; } 
     public function getOperation() : ConditionalOperator { return $this->op; }
 
 
-    public function __construct(Column $col, mixed $val, string $op) { 
+    public function __construct(Table $tbl, Column $col, mixed $val, string $op) { 
+        $this->tbl  = $tbl; 
         $this->col  = $col; 
         $this->val  = $val;
         $this->op   = $op; 

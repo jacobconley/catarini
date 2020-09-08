@@ -29,7 +29,7 @@ class Condition extends querying\Condition {
 
 
     public function __construct(querying\Condition $condition) { 
-        parent::__construct($condition->getColumn(), $condition->getValue(), $condition->getOperation()); 
+        parent::__construct($condition->getTable(), $condition->getColumn(), $condition->getValue(), $condition->getOperation()); 
 
         // This is, as of now, the only situation which doesn't require a placeholder
         // we must take special care not to return one if it's not necessary, since that would
@@ -45,6 +45,7 @@ class Condition extends querying\Condition {
     public function sql(?string $prefix = NULL) : string { 
         $op_str     = $this->getOperation(); // may change 
         $col        = $this->getColumn()->getName();
+        $prefix     = $prefix ?? $this->getTable()->getName();
         if($prefix is nonnull) $col = "$prefix.$col"; 
 
         if($op_str == '=' && $this->getValue() is null) return "$col IS NULL"; 
@@ -81,7 +82,7 @@ class EntityQuery<Tm as Entity> extends querying\EntityQuery<Tm>
     public function __FROM() : string { 
         $tables         = vec<EntityQueryTarget>[]; 
         $table_names    = vec<string>[]; 
-        foreach($this->preceding as $tbl) { 
+        foreach(Vec\concat($this->preceding, vec[$this]) as $tbl) { 
             $info = $tbl->info;
             $name = $info->target->getName();
             $intermediate = $info->intermediate;
@@ -97,20 +98,25 @@ class EntityQuery<Tm as Entity> extends querying\EntityQuery<Tm>
             if($intermediate is nonnull) $tables[] = $intermediate;
         }
 
+        // assuming $tables always contains at least one
+        assert(\count($tables) > 0);
         $this_step = $tables[ \count($tables) - 1 ];
 
-        // assuming $tables always contains at least one
 
-        $FROM = Str\format("FROM %s\n", $this_step->target->getName());
-        
+        $FROM = Str\format("\nFROM %s\n", $this_step->target->getName());
+
         for($i = 1; $i < \count($tables); $i++) { 
-            $step   = $tables[$i];
+            $step       = $tables[$i];
             $tbl        = $step->target;
-            $joined     = TypeAssert\not_null($step->joined);
-            $cur_table      = $tbl->getName();;
-            $cur_key        = $tbl->getPrimaryKey();;
-            $join_table     = $joined->getName();
-            $join_key       = $joined->getPrimaryKey();
+            assert($step->isJoined());
+
+            $j          = $step->getJoin();
+            $join_table = $j[0]->getName();
+            $join_key   = $j[1]; 
+
+
+            $cur_table      = $tbl->getName();
+            $cur_key        = $tbl->getPrimaryKey();
 
             // Aliasing could eventually be implemented here 
             $FROM .= "JOIN $cur_table ON $cur_table.$cur_key = $join_table.$join_key\n";
@@ -142,7 +148,7 @@ class EntityQuery<Tm as Entity> extends querying\EntityQuery<Tm>
         $PARAMETERS =  Vec\filter(  $conditions,    $x ==> ($x->getPlaceholder() is nonnull)    )
                     |> Vec\map(     $$,             $x ==> $x->sql_value()                      );
 
-        if(\count($conditions) > 0) { 
+        if(\count($conditions) > 0) {    
             $first = $conditions[0]->sql();
             $WHERE = "\nWHERE $first\n";
             $WHERE .= Vec\slice($conditions, 1) 
@@ -169,7 +175,7 @@ class EntityQuery<Tm as Entity> extends querying\EntityQuery<Tm>
     //     switch($action) { 
     //         case ACTION::SELECT:
     //             $sel = prefix($this_table->getTable(), $this_table->table_cols()); 
-    //             $query = "SELECT $sel\nFROM $FROM";
+    //             $query = "SELECT $sel".$FROM;
 
     //             if($WHERE) $query .= $WHERE;
 

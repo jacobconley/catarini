@@ -53,8 +53,14 @@ class MySQL_EntityQueryTest extends Facebook\HackTest\HackTest {
         $q = $this->TableQuery($this->tbl__parent());
         $q->__condition_pk(23);
 
-        expect($q->__FROM())    ->toBeSame("FROM parent");
-        expect($q->__WHERE())   ->toBeSame("WHERE parent_id = %s");
+        expect($q->__FROM())    ->toBeSame("\nFROM parent\n");
+        expect($q->__WHERE())   ->toBeSame("\nWHERE parent.parent_id = %d\n");
 
+    }
+
+
+    // Uh oh!  Somewhere, the "join id" probably isn't being set.  Was hastily migrated. 
+    public function testJoin() : void { 
+        // $info = (new EntityQueryTarget(tbl__parent))->join()
     }
 }
