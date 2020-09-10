@@ -1,14 +1,18 @@
+/*
+
+    This file does all of the SQL rendering for Entity queries 
+
+
+*/
+
 namespace catarini\db\backend\mysql; 
 
 use catarini\db\querying;
 use catarini\db\querying\{ Entity, EntityQueryTarget };
+use catarini\db\schema\Table;
 
 use HH\Lib\{ Vec, Str };
 use Facebook\{ TypeAssert, TypeCoerce };
-
-enum ACTION : int { 
-    SELECT = 0;
-};
 
 
 
@@ -70,56 +74,93 @@ class EntityQuery<Tm as Entity> extends querying\EntityQuery<Tm>
 
 
 
+
+
+    //
     //
     // The main query building logic is here (whew!) 
     //
+    //
+
+
+
+
+
+    // SELECT clause
+
+    public function __SELECT() : string { 
+        $tbl = $this->getTarget();
+        $cols = Vec\map($tbl->getColumns(),  $x ==> $x->getName())
+            |> prefix($tbl->getName(), $$);
+
+        return "SELECT $cols\n";
+    }
 
 
 
     //
     // FROM clause
     //
-    public function __FROM() : string { 
-        $tables         = vec<EntityQueryTarget>[]; 
+
+
+    // Maybe this will have to be tested eventually? 
+    private function __FROM_steps() : vec<EntityQueryTarget> { 
+        $targets        = vec<EntityQueryTarget>[]; 
         $table_names    = vec<string>[]; 
         foreach(Vec\concat($this->preceding, vec[$this]) as $tbl) { 
             $info = $tbl->info;
-            $name = $info->target->getName();
-            $intermediate = $info->intermediate;
+            $int    = $info->intermediate;
+            
+            foreach(vec[ $info, $int ] as $q) { 
+                if($q is null) continue; 
 
-            // This will probably be replaced by aliasing logic 
-            if(\in_array($name, $table_names)) { 
-                throw new \InvalidOperationException("Recursive queries are not currently supported"); 
+
+                // This will probably be replaced by aliasing logic 
+                $name = $q->getTarget()->getName();
+                if(\in_array($name, $table_names)) { 
+                    throw new \InvalidOperationException("Recursive queries are not currently supported"); 
+                }
+                $table_names[] = $name;
+
+                
+                $targets[] = $q; 
             }
-            $table_names[] = $name;
 
-
-            $tables[] = $info;
-            if($intermediate is nonnull) $tables[] = $intermediate;
         }
 
+
+        return $targets;         
+    }
+
+    private function join_clause(EntityQueryTarget $target) : string { 
+        $j          = $target->getJoin();
+        $join_table = $j[1]->getName();
+        $join_key   = $j[2]; 
+
+        $tbl        = $target->getTable();
+        $cur_key    = $j[0];
+        $cur_table  = $tbl->getName();
+
+        return "JOIN $join_table ON $cur_table.$cur_key = $join_table.$join_key\n";
+    }
+
+    public function __FROM() : string { 
+
         // assuming $tables always contains at least one
+        $tables = $this->__FROM_steps();
         assert(\count($tables) > 0);
-        $this_step = $tables[ \count($tables) - 1 ];
 
 
-        $FROM = Str\format("\nFROM %s\n", $this_step->target->getName());
+        // Aliasing could eventually be implemented here 
+
+        $this_step = $tables[0];
+        $FROM = Str\format("\nFROM %s\n", $this_step->getTable()->getName());
+        if($this_step->isJoined()) $FROM .= $this->join_clause($this_step); 
 
         for($i = 1; $i < \count($tables); $i++) { 
             $step       = $tables[$i];
-            $tbl        = $step->target;
             assert($step->isJoined());
-
-            $j          = $step->getJoin();
-            $join_table = $j[0]->getName();
-            $join_key   = $j[1]; 
-
-
-            $cur_table      = $tbl->getName();
-            $cur_key        = $tbl->getPrimaryKey();
-
-            // Aliasing could eventually be implemented here 
-            $FROM .= "JOIN $cur_table ON $cur_table.$cur_key = $join_table.$join_key\n";
+            $FROM .= $this->join_clause($step); 
         }
 
         return $FROM; 

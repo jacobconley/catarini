@@ -12,6 +12,8 @@ class Table {
     public function getName() : string { return $this->name; }
     public function getColumns() : vec<Column> { return $this->columns; }
     public function getPrimaryKey() : string { return $this->primary; }
+
+    <<__Memoize>>
     public function getPrimaryColumn() : Column { 
         return Vec\first_key($this->columns,   $x ==> $x->getName() === $this->primary   ) |> $this->columns[$$];
     }

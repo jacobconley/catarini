@@ -48,19 +48,113 @@ class MySQL_EntityQueryTest extends Facebook\HackTest\HackTest {
         return new EntityQuery(new EntityQueryTarget($table));
     }
 
-    public function testPK() : void { 
+
+    //
+    //
+    // Unit Tests
+    //
+    //
+
+
+    // Simple query
+
+
+    public function testSimpleFetch() : void { 
 
         $q = $this->TableQuery($this->tbl__parent());
         $q->__condition_pk(23);
 
+        expect($q->__SELECT())  ->toBeSame("SELECT parent.id, parent.name\n");
         expect($q->__FROM())    ->toBeSame("\nFROM parent\n");
-        expect($q->__WHERE())   ->toBeSame("\nWHERE parent.parent_id = %d\n");
-
+        expect($q->__WHERE())   ->toBeSame("\nWHERE parent.id = %d\n");
     }
 
 
-    // Uh oh!  Somewhere, the "join id" probably isn't being set.  Was hastily migrated. 
+    //
+    // Joining
+    //
+
+
     public function testJoin() : void { 
-        // $info = (new EntityQueryTarget(tbl__parent))->join()
+        $info = (new EntityQueryTarget($this->tbl__parent()))
+            ->join('id', $this->tbl__student(), 'parent_id');
+        $q = (new EntityQuery($info));
+
+        expect($q->__SELECT())  ->toBeSame("SELECT student.id, student.name, student.parent_id\n");
+        expect($q->__FROM())    ->toBeSame("\nFROM parent\nJOIN student ON parent.id = student.parent_id\n");
     }
+
+
+
+    public function testIntermediate() : void 
+    { 
+        $q = (new EntityQueryTarget($this->tbl__student()))
+            ->join_through($this->tbl__student_class(), 'student_id', 'class_id', $this->tbl__class())
+            |> new EntityQuery($$); 
+
+
+        /*------*/
+        $FROM = <<< SQL
+
+FROM student
+JOIN student_class ON student.id = student_class.student_id
+JOIN class ON student_class.class_id = class.id
+
+SQL;
+        /*------*/
+
+        expect($q->__FROM())->toBeSame($FROM); 
+    }
+
+
+
+
+    //
+    //TODO: Test variable placeholders?  Conditions?  and such 
+    //
+
+
+
+    //
+    //
+    //
+    // Integration Tests
+    //
+    //
+    //
+
+    public function testLinkedQuery() : void { 
+
+        $q1 =  (new EntityQueryTarget($this->tbl__parent()))
+            |> (new EntityQuery($$))
+            -> __condition_pk(23); 
+
+        $q2 = (new EntityQueryTarget($this->tbl__parent()))
+            ->join('id', $this->tbl__student(), 'parent_id')
+            |> new EntityQuery($$); 
+
+        $q  = (new EntityQueryTarget($this->tbl__student()))
+            ->join_through($this->tbl__student_class(), 'student_id', 'class_id', $this->tbl__class())
+            |> new EntityQuery($$, vec[$q1, $q2]);
+        
+        $q->__condition_pk(23); 
+
+        
+        
+        $FROM = <<< SQL
+
+FROM parent
+JOIN student ON parent.id = student.parent_id
+JOIN student_class ON student.id = student_class.student_id
+JOIN class ON student_class.class_id = class.id
+
+SQL;
+
+
+        expect($q->__SELECT())  ->toBeSame("SELECT class.id, class.subject, class.teacher_id\n");
+        expect($q->__FROM())    ->toBeSame($FROM); 
+        expect($q->__WHERE())   ->toBeSame("\nWHERE parent.id = %d\nAND class.id = %d\n");
+
+    }
+
 }

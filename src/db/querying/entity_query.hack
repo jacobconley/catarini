@@ -6,46 +6,59 @@ use catarini\db\schema\{ Schema, Table };
 use HH\Lib\{ Vec }; 
 
 
-
+/**
+ * Private class - ought not be used anywhere except tests and codegen 
+ */
 final class EntityQueryTarget { 
-    public Table        $target;
+    public Table        $table;
 
     public ?Table       $joined; 
-    public ?string      $joined_key; 
+    public ?string      $joined_key; // right hand key 
+    public ?string      $left_key; // left hand key
 
     public ?this        $intermediate;
 
-    public function getTarget() : Table { return $this->target; }
+    public function getTable() : Table { return $this->table; }
+
     public function getIntermediate() : ?this { return $this->intermediate; }
 
-    public function __construct(Table $target) { 
-        $this->target = $target;
+    public function __construct(Table $table) { 
+        $this->table = $table;
     }
 
 
 
     public function isJoined() : bool { return ($this->joined is nonnull); }
-    public function getJoin() : (Table, string) { 
+    public function getJoin() : (string, Table, string) { 
+        $lft = $this->left_key;
         $tbl = $this->joined;
         $key = $this->joined_key; 
-        if($tbl is nonnull && $key is nonnull) return tuple($tbl, $key);
+        if($lft is nonnull && $tbl is nonnull && $key is nonnull) return tuple($lft, $tbl, $key);
         else throw new \catarini\exceptions\InconsistentState("Bad join state"); // lol this message sucks 
     }                       
 
 
-    // "joined" table is the "child" or "owned" object - the one that contains the reference to the other table
-    // i.e. the query will be rendered 
-    //      JOIN $target.primary_key = $joined.joined_key 
 
-    public function join(Table $join, string $join_key) : this { 
+    public function getTarget() : Table { 
+        $j = $this->joined;
+        return $j ?? $this->table; 
+    }
+
+
+    // Convention:  Strings come after the table they modify (in beginning if it's $this->target) 
+    // Convention:  Joins are rendered (left to right) in the order they're created 
+
+    public function join(string $left_key, Table $join, string $right_key) : this { 
         $this->joined       = $join;
-        $this->joined_key   = $join_key;
+        $this->joined_key   = $right_key; 
+        $this->left_key     = $left_key;
         return $this; 
     }
 
-    public function join_through(Table $intermediate, Table $end, string $this_key, string $end_key) : this { 
-        $this->join($intermediate, $this_key); 
-        $this->intermediate = (new EntityQueryTarget($end))->join($intermediate, $end_key);
+    // Special case of join - the first and last keys referenced will always be the table's primary key
+    public function join_through(Table $intermediate, string $this_key, string $end_key, Table $end) : this { 
+        $this->join($this->table->getPrimaryKey(), $intermediate, $this_key); 
+        $this->intermediate = (new EntityQueryTarget($intermediate))->join($end_key, $end, $end->getPrimaryKey());
         return $this; 
     }
 }
@@ -65,6 +78,16 @@ abstract class EntityQuery<Tm as Entity> {
         $this->preceding = $previous; 
     }
 
+
+    // This is probably the only good usage of the word "target" 
+    // Rename all the other shit probably 
+    protected function getTarget() : Table { 
+
+        $int = $this->info->getIntermediate(); 
+        if($int is nonnull) return $int->getTarget();
+        else                return $this->info->getTarget();
+
+    }
 
 
     // Previous queries that have been joined with this one
@@ -107,9 +130,10 @@ abstract class EntityQuery<Tm as Entity> {
     protected function getConditions() : vec<Condition> { return $this->conditions; }
     protected function addCondition(Condition $c) : void  { $this->conditions[] = $c; }
 
-    public function __condition_pk(mixed $primary) : void { 
-        $tbl = $this->info->target;
+    public function __condition_pk(mixed $primary) : this { 
+        $tbl = $this->getTarget();
         $this->addCondition(new Condition($tbl, $tbl->getPrimaryColumn(), $primary, '='));
+        return $this; 
     }
 
     // Currently: 
