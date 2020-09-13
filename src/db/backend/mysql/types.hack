@@ -5,7 +5,9 @@ use catarini\db\Type;
 use Facebook\{ TypeAssert, TypeCoerce }; 
 use DateTime;
 
-function type_sql_literal(Type $type, mixed $value) : string { 
+use AsyncMysqlConnection;
+
+function type_sql_literal(Type $type, mixed $value, AsyncMysqlConnection $conn) : string { 
 
     if($value is null) return 'NULL';
 
@@ -17,8 +19,11 @@ function type_sql_literal(Type $type, mixed $value) : string {
 
             case Type::STRING:
             case Type::TEXT:
+                return $conn->escapeString( TypeAssert\string($value) );
+    
+
             case Type::UUID:
-                return '"'.TypeAssert\matches<string>($value).'"';
+                return '"'.TypeAssert\string($value).'"';
 
             case Type::TIMESTAMP:
             case Type::DATETIME: 

@@ -63,7 +63,12 @@ final class EntityQueryTarget {
     }
 }
 
+
+
+
+
 type joinlist = vec<EntityQuery<Entity>>;
+
 
 
 // Tm - entity sublcass

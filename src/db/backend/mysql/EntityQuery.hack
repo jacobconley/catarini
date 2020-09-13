@@ -10,10 +10,12 @@ namespace catarini\db\backend\mysql;
 use catarini\db\querying;
 use catarini\db\querying\{ Entity, EntityQueryTarget };
 use catarini\db\schema\Table;
+use catarini\log; 
 
 use HH\Lib\{ Vec, Str };
 use Facebook\{ TypeAssert, TypeCoerce };
 
+use AsyncMysqlConnection; 
 
 
 function prefix(string $prefix, vec<string> $cols) : string { 
@@ -46,21 +48,29 @@ class Condition extends querying\Condition {
     // can override getOperation here
     // this could allow us to implement things like CONTAINS on platforms that dont have it
 
-    public function sql(?string $prefix = NULL) : string { 
+    /**
+     * Renders this condition to MySQL.  
+     * Funky behavior:  Uses placeholders if the Async connection isn't given.  This is for ease of testing, but it's stupid as shit and 
+     *  needs to be either greatly clarified or changed altogether.
+     *
+     * @param $conn An `AsyncMysqlConnection` object, used to escape a string value if needed.  SQL will be rendered with placeholders if this is left NULL. 
+     * @return The rendered SQL string, with no whitespace on either end.  
+     */
+    public function sql(?AsyncMysqlConnection $conn = NULL) : string { 
         $op_str     = $this->getOperation(); // may change 
         $col        = $this->getColumn()->getName();
-        $prefix     = $prefix ?? $this->getTable()->getName();
-        if($prefix is nonnull) $col = "$prefix.$col"; 
+        // $prefix     = $prefix ?? $this->getTable()->getName();
+        // if($prefix is nonnull) $col = "$prefix.$col"; 
+        $prefix     = $this->getTable()->getName();
+        $col        = "$prefix.$col";
 
         if($op_str == '=' && $this->getValue() is null) return "$col IS NULL"; 
-
+        
         $placeholder = $this->placeholder;
+        $operand    = $conn is null ? $placeholder : type_sql_literal($this->getColumn()->getType(), $this->getValue(), $conn);
         return "$col $op_str $placeholder";
     }
 
-    public function sql_value() : string { 
-        return type_sql_literal($this->getColumn()->getType(),  $this->getValue());
-    }
 }
 
 
@@ -88,10 +98,13 @@ class EntityQuery<Tm as Entity> extends querying\EntityQuery<Tm>
 
     // SELECT clause
 
+    /**
+     * @return The SELECT clause, ending with \n 
+     */
     public function __SELECT() : string { 
         $tbl = $this->getTarget();
         $cols = Vec\map($tbl->getColumns(),  $x ==> $x->getName())
-            |> prefix($tbl->getName(), $$);
+                |> prefix($tbl->getName(), $$);
 
         return "SELECT $cols\n";
     }
@@ -144,6 +157,9 @@ class EntityQuery<Tm as Entity> extends querying\EntityQuery<Tm>
         return "JOIN $join_table ON $cur_table.$cur_key = $join_table.$join_key\n";
     }
 
+    /**
+     * @return The FROM clause, beginning and ending with \n
+     */
     public function __FROM() : string { 
 
         // assuming $tables always contains at least one
@@ -173,7 +189,11 @@ class EntityQuery<Tm as Entity> extends querying\EntityQuery<Tm>
     //
     // WHERE clause
     //
-    public function __WHERE() : ?string { 
+    /**
+     * @param  
+     * @return the WHERE clause, beginning and ending with \n 
+     */
+    public function __WHERE(?AsyncMysqlConnection $conn = NULL) : ?string { 
         $queries        = $this->preceding;
         $queries[]      = $this; 
 
@@ -182,15 +202,10 @@ class EntityQuery<Tm as Entity> extends querying\EntityQuery<Tm>
 
         $conditions =  Vec\map($queries,            $x ==> $x->getConditions()  ) 
                     |> Vec\flatten($$) 
-                    |> Vec\map(  $$,                $x ==> new Condition($x)    ); // Converting to this namespace's `Condition` class
-
-        // [!] If parameters show up anywhere else, we'll have to rethink how we use this array 
-        // Also, how will it be used downstream.... 
-        $PARAMETERS =  Vec\filter(  $conditions,    $x ==> ($x->getPlaceholder() is nonnull)    )
-                    |> Vec\map(     $$,             $x ==> $x->sql_value()                      );
+                    |> Vec\map(  $$,                $x ==> new Condition($x)    ); // Converting to backend\mysql\Condition
 
         if(\count($conditions) > 0) {    
-            $first = $conditions[0]->sql();
+            $first = $conditions[0]->sql($conn);
             $WHERE = "\nWHERE $first\n";
             $WHERE .= Vec\slice($conditions, 1) 
                     |> Vec\map($$,  $x ==> $x->sql()    ) 
@@ -205,29 +220,33 @@ class EntityQuery<Tm as Entity> extends querying\EntityQuery<Tm>
 
     // Reference: https://dev.mysql.com/doc/refman/8.0/en/select.html
     //  https://en.wikipedia.org/wiki/SQL_syntax
-    // private function genquery(ACTION $action) : string {
-
-    //     $FROM = $this->__FROM();
-    //     $WHERE = $this->__WHERE();
 
 
-    //     //TODO: All the other shit in EntityQuery 
+    //
+    //
+    // API
+    //
+    //
 
-    //     switch($action) { 
-    //         case ACTION::SELECT:
-    //             $sel = prefix($this_table->getTable(), $this_table->table_cols()); 
-    //             $query = "SELECT $sel".$FROM;
+    private function db() : AsyncMysqlConnection { 
+        $db = \Catarini::GET()->db(); 
+        if($db is /* backend\mysql */ Database) return $db->getMySQL(); 
+        else throw new \catarini\exceptions\InvalidEnvironment("Current database is not MySQL");
+        // In the future, the above error will likely be due to a change of database without regenerating code - 
+        //  the error message should be changed to reflect that 
+    }
 
-    //             if($WHERE) $query .= $WHERE;
-
-    //             return $query; 
-
-    //     }
-    // }
 
 
 
     // public async function first() : Awaitable<Tm> { 
-    //     // Execute and log query here 
+    //     $SELECT     = $this->__SELECT();
+    //     $FROM       = $this->__FROM();
+    //     $WHERE      = $this->__WHERE(); 
+
+    //     $query      = $SELECT.$FROM.$WHERE."LIMIT 1";
+    //     log\query($query); 
+
+    //     // $this->db()->queryf($query, $this->)
     // }
 }

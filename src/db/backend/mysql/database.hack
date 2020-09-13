@@ -17,6 +17,9 @@ class Database implements db\DatabaseInstance {
     private function __construct(AsyncMysqlConnection $conn) {
         $this->conn = $conn; 
      }
+
+
+    public function getMySQL() : AsyncMysqlConnection { return $this->conn; }
     
     public static function PoolConnect( string  $host, 
                                         int     $port, 

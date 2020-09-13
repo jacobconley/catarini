@@ -32,8 +32,8 @@ class CLI {
     private ?string $root;
 
     <<__Memoize>>
-    private function db(?string $name) : DatabaseCommand { 
-        return new DatabaseCommand(\Catarini::GET()->db($name));
+    private function db() : DatabaseCommand { 
+        return new DatabaseCommand(\Catarini::GET()->db());
     }
 
     //TODO: Help command
@@ -108,11 +108,11 @@ class CLI {
                     case 'reseed':
 
                     case 'migrate':
-                        $this->db(NULL)->Migrate(TRUE);
+                        $this->db()->Migrate(TRUE);
                         break;
 
                     case 'rollback': 
-                        $this->db(NULL)->Migrate(FALSE); 
+                        $this->db()->Migrate(FALSE); 
                         break; 
 
 

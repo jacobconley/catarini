@@ -90,9 +90,9 @@ class Catarini {
     //
 
     <<__Memoize>>
-    public function db(?string $name = NULL) : DatabaseInstance { 
+    public function db() : DatabaseInstance { 
         //TODO: Schema / migration validations
-        return CONFIG::GET()->getDatabase($name); 
+        return CONFIG::GET()->getDatabase(); 
     }
 
 
