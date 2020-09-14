@@ -1,7 +1,7 @@
 require_once __DIR__.'/../vendor/hh_autoload.hh'; 
 
 use catarini\db\{ Type };
-use catarini\db\schema\{ Table, Column, Schema }; 
+use catarini\db\schema\{ Table, Column, Schema, Reference, ReferenceAction, Relationship, RelationshipEnd, Cardinality }; 
 use catarini\db\migration\SchemaWriter;
 use catarini\db\backend\mysql; 
 
@@ -21,11 +21,19 @@ function _test_codegen_main() : void {
 
     $dir = _test_dir().'/output/';
 
-    $tables = vec[
-        new Table('tibble', vec[
-            new Column(Type::INT, 'test')
-        ])
-    ];
+    $tables = vec[];
+    
+    $tables[] = new Table('tibble', vec[
+        (new Column(Type::INT, 'id', NULL, TRUE))->nonnull()->unique(),
+        (new Column(Type::INT, 'test', NULL, FALSE))
+    ]);
+
+    $tables[] = new Table('other', vec[
+        (new Column(Type::INT, 'id', NULL, TRUE))->nonnull()->unique(),
+        (new Column(Type::INT, 'tibble_id', 
+            new Reference($tables[0], 'tabble'),
+        FALSE))->nonnull()
+    ]);
 
     $relationships = vec[]; 
 

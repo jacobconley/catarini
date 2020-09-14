@@ -2,7 +2,7 @@
 /**
  * This file is generated. Do not modify it manually!
  *
- * @generated SignedSource<<af7b462f2c87d7226a1f1b8c3f6ff699>>
+ * @generated SignedSource<<196effa7b90eec3932a88c0489d75a3d>>
  */
 namespace _catarini_test;
 use namespace catarini\db;
@@ -20,16 +20,16 @@ class tibble {
     'id',
     'test',
   ];
-  private ?int $id;
+  private int $id;
   private ?int $test;
 
-  public function __construct(?int $id, ?int $test) {
+  public function __construct(int $id, ?int $test) {
     $this->id = $id;
     $this->test = $test;
   }
 
   public static function from_sql(dict<string, ?string> $row): tibble {
-    $id = __sql_val_opt<int>(Type::INT, 'id', $row['id'], NULL);
+    $id = __sql_val<int>(Type::INT, 'id', $row['id'], NULL);
     $test = __sql_val_opt<int>(Type::INT, 'test', $row['test'], NULL);
     return new tibble($id, $test);
   }

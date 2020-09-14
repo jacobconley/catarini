@@ -3,7 +3,7 @@ use catarini\db\backend\mysql\EntityQuery; // [!!!!]
 use catarini\db\querying\{ Entity, EntityQueryTarget }; 
 
 use catarini\db\Type; 
-use catarini\db\schema\{ Column, Table };
+use catarini\db\schema\{ Column, Table, Reference, Cardinality, Relationship, RelationshipEnd };
 
 
 use function Facebook\FBExpect\expect;
@@ -28,19 +28,40 @@ class MySQL_EntityQueryTest extends Facebook\HackTest\HackTest {
 
 
     private function tbl__parent() : Table { 
-        return new Table( 'parent', vec[ new Column(Type::STRING, 'name') ]);
+        return new Table( 'parent', vec[ 
+            new Column(Type::INT, 'id', NULL, TRUE),
+            new Column(Type::STRING, 'name') 
+        ]);
     }
     private function tbl__student() : Table { 
-        return new Table( 'student', vec[ new Column(Type::STRING, 'name'), new Column(Type::INT, 'parent_id') ]);
+        return new Table( 'student', vec[ 
+            new Column(Type::INT, 'id', NULL, TRUE),
+            new Column(Type::STRING, 'name'), 
+            new Column(Type::INT, 'parent_id') 
+        ]);
     }
     private function tbl__student_class() : Table { 
-        return new Table( 'student_class', vec[ new Column(Type::INT, 'student_id'), new Column(Type::INT, 'class_id') ]);
+        return new Table( 'student_class', vec[ 
+            new Column(Type::INT, 'student_id',  
+                new Reference($this->tbl__student(), NULL)
+            , TRUE), 
+            new Column(Type::INT, 'class_id',   
+                new Reference($this->tbl__class(), NULL)
+            , TRUE), 
+        ]);
     }
     private function tbl__class() : Table { 
-        return new Table( 'class', vec[ new Column(Type::STRING, 'subject'), new Column(Type::INT, 'teacher_id') ]);
+        return new Table( 'class', vec[ 
+            new Column(Type::INT, 'id', NULL, TRUE),
+            new Column(Type::STRING, 'subject'), 
+            new Column(Type::INT, 'teacher_id') 
+        ]);
     }
     private function tbl__teacher() : Table { 
-        return new Table('teacher', vec[ new Column(Type::STRING, 'name') ]); 
+        return new Table('teacher', vec[ 
+            new Column(Type::INT, 'id', NULL, TRUE),
+            new Column(Type::STRING, 'name') 
+        ]); 
     }
 
 

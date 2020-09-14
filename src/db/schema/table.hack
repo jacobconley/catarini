@@ -7,16 +7,9 @@ use HH\Lib\{ Vec, Str };
 class Table { 
     private string $name;
     private vec<Column> $columns;
-    private string $primary;
 
     public function getName() : string { return $this->name; }
     public function getColumns() : vec<Column> { return $this->columns; }
-    public function getPrimaryKey() : string { return $this->primary; }
-
-    <<__Memoize>>
-    public function getPrimaryColumn() : Column { 
-        return Vec\first_key($this->columns,   $x ==> $x->getName() === $this->primary   ) |> $this->columns[$$];
-    }
 
     public function getColumn(string $name) : Column { 
         return Vec\first_where($this->columns, $x ==> $x->getName() === $name); 
@@ -39,19 +32,24 @@ class Table {
 
 
 
-    public function __construct(string $name, vec<Column> $columns, ?string $primary_key = NULL) {
-        $this->name = $name;  
- 
-        if($primary_key is null) { 
-            // the $primary_key default null should probably be removed.  this is dev laziness to migrate existing tests 
-            $primary_key = 'id';
-            $this->primary = $primary_key;
-            $this->columns = Vec\concat(vec[new Column(Type::INT, $primary_key)], $columns);
-        }
-        else {
-            $this->primary = $primary_key;
-            $this->columns = $columns;
-        }
+    public function getPrimaryColumns() : vec<Column> { return Vec\filter($this->columns,  $x ==> $x->isPrimary()  ); }
+    public function getUniquePrimary() : ?Column { 
+        $primaries = $this->getPrimaryColumns();
+        return \count($primaries) == 1 ? $primaries[0] : NULL; 
+    }
 
+    public function __forcePrimaryCol() : Column { 
+        $col = $this->getUniquePrimary();
+        if($col is null) throw new \catarini\exceptions\InvalidOperation("Table $this->name does not have a unique primary key"); 
+        return $col;
+    }
+    public function __forcePrimaryKey() : string { 
+        return $this->__forcePrimaryCol()->getName();
+    }
+
+
+    public function __construct(string $name, vec<Column> $columns) {
+        $this->name = $name;  
+        $this->columns = $columns;
     }
 }

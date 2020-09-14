@@ -3,11 +3,11 @@ namespace catarini\db\schema;
 use function Facebook\TypeAssert\not_null;
 
 
-enum ReferenceAction : int { 
-    SET_NULL    = 0;
-    SET_DEFAULT = 1; 
-    CASCADE     = 2;
-    RESTRICT    = 3; 
+enum ReferenceAction : string { 
+    SET_NULL    = 'SET_NULL';
+    SET_DEFAULT = 'SET_DEFAULT'; 
+    CASCADE     = 'CASCADE';
+    RESTRICT    = 'RESTRICT'; 
 }
 
 
@@ -17,6 +17,7 @@ final class Reference {
     public function getReferencedTable() : Table { return $this->ref; }
 
     private ?string $alias; 
+    public function getAlias() : ?string { return $this->alias; }
 
     public function __construct(Table $reference, ?string $alias) { 
         $this->ref = $reference;
@@ -44,6 +45,9 @@ final class Reference {
 
     public function nullable() : this { $this->nullable = TRUE; return $this; }
 
+
+    // ReferenceActions
+
     public function nullify() : this { 
         $this->nullable = TRUE; 
         $this->onDelete = ReferenceAction::SET_NULL;
@@ -70,11 +74,11 @@ final class Reference {
 }
 
 
-enum Cardinality : int { 
-    OPTIONAL    = 0;
-    MANDATORY   = 1;
-    AGGREGATION = 2; 
-    HIDDEN      = 10; 
+enum Cardinality : string { 
+    OPTIONAL    = 'OPTIONAL';
+    MANDATORY   = 'MANDATORY';
+    AGGREGATION = 'AGGREGATION'; 
+    HIDDEN      = 'HIDDEN';
 }
 
 final class RelationshipEnd { 

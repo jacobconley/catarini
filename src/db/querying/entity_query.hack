@@ -7,7 +7,8 @@ use HH\Lib\{ Vec };
 
 
 /**
- * Private class - ought not be used anywhere except tests and codegen 
+ * This class represents the targeted table(s) of a particular stage of an EntityQuery.  This can be a single table, two joined tables, or two tables joined by a third intermediate.
+ * It's completely hideous, and will likely be removed soon.  Don't look at it or read it, it may turn you into stone.  
  */
 final class EntityQueryTarget { 
     public Table        $table;
@@ -57,8 +58,8 @@ final class EntityQueryTarget {
 
     // Special case of join - the first and last keys referenced will always be the table's primary key
     public function join_through(Table $intermediate, string $this_key, string $end_key, Table $end) : this { 
-        $this->join($this->table->getPrimaryKey(), $intermediate, $this_key); 
-        $this->intermediate = (new EntityQueryTarget($intermediate))->join($end_key, $end, $end->getPrimaryKey());
+        $this->join($this->table->__forcePrimaryKey(), $intermediate, $this_key); 
+        $this->intermediate = (new EntityQueryTarget($intermediate))->join($end_key, $end, $end->__forcePrimaryKey());
         return $this; 
     }
 }
@@ -137,7 +138,7 @@ abstract class EntityQuery<Tm as Entity> {
 
     public function __condition_pk(mixed $primary) : this { 
         $tbl = $this->getTarget();
-        $this->addCondition(new Condition($tbl, $tbl->getPrimaryColumn(), $primary, '='));
+        $this->addCondition(new Condition($tbl, $tbl->__forcePrimaryCol(), $primary, '='));
         return $this; 
     }
 
