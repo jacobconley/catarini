@@ -9,10 +9,10 @@ namespace HH\Lib\Vec;
  * [UNOFFICIAL] Returns the key of the first element for which the given function returns true.
  * returns `NULL` if no such element exists.  
  */
-function find_first_key<Tv>(Traversable<Tv> $traversable, (function(Tv) : bool) $func) : ?int {
+function find_first_key<Tk, Tv>(KeyedContainer<arraykey, Tv> $container, (function(Tv) : bool) $func) : ?int {
 
     $i = -1;
-    foreach($traversable as $t) { 
+    foreach($container as $t) { 
         $i++;
         if($func($t)) return $i; 
     }
@@ -25,8 +25,8 @@ function find_first_key<Tv>(Traversable<Tv> $traversable, (function(Tv) : bool) 
  * If no such element exists, an `\Exception` will be thrown.
  * Same as `find_first_key`, except non-optional. 
  */
-function first_key<Tv>(Traversable<Tv> $traversable, (function(Tv) : bool) $func) : int {
-    $i = find_first_key($traversable, $func);
+function first_key<Tk, Tv>(KeyedContainer<arraykey, Tv> $container, (function(Tv) : bool) $func) : int {
+    $i = find_first_key($container, $func);
     if($i is nonnull) return $i; 
     throw new \Exception("No such element"); 
 }
@@ -35,10 +35,18 @@ function first_key<Tv>(Traversable<Tv> $traversable, (function(Tv) : bool) $func
  * [UNOFFICIAL] Returns the first element for which the given function returns true.
  * returns `NULL` if no such element exists.  
  */
-// function find_first<Tv>(Traversable<Tv> $traversable, (function(Tv) : bool) $func) : ?Tv { 
-    
-// }
+function find_first_where<Tk, Tv>(KeyedContainer<arraykey, Tv> $container, (function(Tv) : bool) $func) : ?Tv { 
+    $key = find_first_key($container, $func); 
+    return $key is null ? NULL : $container[$key]; 
+}
 
+/**
+ * [UNOFFICIAL] Returns the first element for which the given function returns true.
+ * returns `NULL` if no such element exists.  
+ */
+function first_where<Tk, Tv>(KeyedContainer<arraykey, Tv> $container, (function(Tv) : bool) $func) : Tv { 
+    return $container[ first_key($container, $func) ]; 
+}
 
 
 /**

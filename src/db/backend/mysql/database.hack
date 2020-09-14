@@ -14,8 +14,9 @@ use AsyncMysqlConnection;
 class Database implements db\DatabaseInstance { 
 
     private AsyncMysqlConnection $conn; 
-    private function __construct(AsyncMysqlConnection $conn) {
+    private function __construct(AsyncMysqlConnection $conn, ?Schema $schema = NULL) {
         $this->conn = $conn; 
+        $this->schema = $schema ?? new Schema();
      }
 
 
@@ -35,12 +36,13 @@ class Database implements db\DatabaseInstance {
 
     //TODO: Query logging?
 
-    //TODO: Gotta maintain the model here (list of tables, etc) (will need entity relationships later)
     // Since we're doing everything using strings, not type safe, we'll have to make sure that no duplicates get in here
+    //TODO: Replace this with Schema object, make sure it is maintained
     private vec<Table> $tables = vec[]; 
+    private Schema $schema; 
 
     public function getSchemaWriter(string $dir) : SchemaWriter { 
-        return new SchemaWriter($this->tables, $dir);
+        return new SchemaWriter($this->schema, $dir);
     }
 
 

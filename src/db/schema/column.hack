@@ -14,9 +14,15 @@ class Column
 { 
     protected string $name;
     protected dbType $type;
-    public function __construct(dbType $type, string $name) { 
+
+    //QUESTION:  How smart is this?  Could this lead to some bad recursion? 
+    protected ?Reference $ref; 
+    public function getReference() : ?Reference { return $this->ref;}
+
+    public function __construct(dbType $type, string $name, ?Reference $reference = NULL) { 
         $this->name = $name;
         $this->type = $type; 
+        $this->ref = $reference; 
     }
 
 
@@ -124,7 +130,7 @@ class Column
 
 
 
-// Unsafe renderer
+// Unsafe renderer for hack codegen - how necessary is this? 
 class __column_renderer implements IHackBuilderValueRenderer<string> { 
     public function render(IHackCodegenConfig $config, string $input) : string { return $input; }
 }

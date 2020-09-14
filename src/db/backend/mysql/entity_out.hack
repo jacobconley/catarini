@@ -22,7 +22,7 @@ function entity_out(Schema $schema, string $dir, ?string $namespace = NULL) : vo
 
     \catarini\util\ensure_dir($dir); 
 
-    $tables = $schema; // migratable
+    $tables = $schema->getTables(); 
     
     $hack_config = new HackCodegenConfig();
     $hack = new HackCodegenFactory($hack_config); 

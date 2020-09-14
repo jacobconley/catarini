@@ -25,6 +25,8 @@ class SchemaWriter {
     }    
 
 
+
+
     public function _hackColumn(HackBuilder $cb, Column $col) : void { 
         $type = $col->getType();
 
@@ -41,6 +43,7 @@ class SchemaWriter {
         $cb->ensureNewLine();
     }
 
+
     public function _hackTable(HackBuilder $cb, Table $table) : void { 
         $cb->addf('new Table("%s", vec[', $table->getName());
         $cb->ensureNewLine();
@@ -49,10 +52,14 @@ class SchemaWriter {
         foreach($table->getColumns() as $col) $this->_hackColumn($cb, $col);
 
         $cb->unindent();
-        $cb->add(']),');
+        $cb->addf('], "%s"),',  $table->getPrimaryKey());
         $cb->ensureNewLine();
         $cb->ensureEmptyLine();
     }
+
+
+
+
 
     public function writeHack(?string $namespace) : void { 
         $dir = $this->dir; 
@@ -67,8 +74,7 @@ class SchemaWriter {
         if($namespace is nonnull) $cg->setNamespace($namespace); 
 
 
-        $tables = $this->schema; // Eventually the schema will be wrapped
-        
+        $tables = $this->schema->getTables(); 
         $tbc = $hack->codegenHackBuilder();
         foreach($tables as $table) $this->_hackTable($tbc, $table);
 
@@ -83,16 +89,32 @@ class SchemaWriter {
                     ->setBody(
 
                         $hack->codegenHackBuilder()
-                            ->add('return vec[')
-                            ->ensureNewLine()
+                            ->ensureEmptyLine()
+                            ->add('$tables = vec[')
                             ->ensureEmptyLine()
 
                             ->indent()
                             ->add($tbc->getCode())
                             ->unindent()
+
+                            ->ensureNewLine()
+                            ->add('];')
+                            ->ensureEmptyLine()
+
+                            ->add('$relationships = vec[')
                             ->ensureNewLine()
 
+                            //TODO: Relationships ! 
+
+                            ->ensureNewLine()
                             ->add('];')
+                            ->ensureEmptyLine()
+
+
+                            ->add('return new Schema($tables, $relationships);')
+                            ->ensureNewLine()
+
+
                             ->getCode()
                     )
         );

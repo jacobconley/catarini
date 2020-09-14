@@ -21,11 +21,15 @@ function _test_codegen_main() : void {
 
     $dir = _test_dir().'/output/';
 
-    $schema = vec[
+    $tables = vec[
         new Table('tibble', vec[
             new Column(Type::INT, 'test')
         ])
     ];
+
+    $relationships = vec[]; 
+
+    $schema = new Schema($tables, $relationships); 
 
 
 

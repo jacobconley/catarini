@@ -18,10 +18,30 @@ class Table {
         return Vec\first_key($this->columns,   $x ==> $x->getName() === $this->primary   ) |> $this->columns[$$];
     }
 
+    public function getColumn(string $name) : Column { 
+        return Vec\first_where($this->columns, $x ==> $x->getName() === $name); 
+    }
+
+    /**
+     * Returns the unique column referencing the given table, if exactly one such column exists.  Otherwise, returns NULL. 
+     * Used to find the default column for the Schema API when it creates relationships. 
+     * @return See above
+     */
+    public function getColumnReferencing(Table $table) : ?Column { 
+        
+        $refs = Vec\filter($this->columns, $x ==> { 
+            $ref  = $x->getReference();
+            return ($ref is nonnull && $ref->getReferencedTable()->getName() === $table->getName());
+        });
+
+        return \count($refs) == 1 ? $refs[0] : NULL; // Only returns nonnull if unambiguous 
+    }
+
+
+
     public function __construct(string $name, vec<Column> $columns, ?string $primary_key = NULL) {
         $this->name = $name;  
-
-        $columns = $columns; 
+ 
         if($primary_key is null) { 
             // the $primary_key default null should probably be removed.  this is dev laziness to migrate existing tests 
             $primary_key = 'id';
