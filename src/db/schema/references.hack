@@ -16,12 +16,11 @@ final class Reference {
     private Table $ref; 
     public function getReferencedTable() : Table { return $this->ref; }
 
-    private ?string $alias; 
-    public function getAlias() : ?string { return $this->alias; }
 
-    public function __construct(Table $reference, ?string $alias) { 
+    public function __construct(Table $reference, ReferenceAction $onUpdate, ReferenceAction $onDelete) { 
         $this->ref = $reference;
-        $this->alias = $alias; 
+        $this->onUpdate = $onUpdate;
+        $this->onDelete = $onDelete; 
     }
 
 

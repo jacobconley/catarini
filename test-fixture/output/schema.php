@@ -2,7 +2,7 @@
 /**
  * This file is generated. Do not modify it manually!
  *
- * @generated SignedSource<<0718a35c5c9ffc73f264762c8bf8eb80>>
+ * @generated SignedSource<<0b238d94e1820196b76b7e3e9ec23991>>
  */
 namespace _catarini_test;
 use namespace catarini\db;
@@ -20,8 +20,7 @@ function _db_schema(): Schema {
   $tables[] = new Table("other", vec[
     (new Column(Type::INT, "id", NULL, TRUE))->nonnull()->unique(),
     (new Column(Type::INT, "tibble_id", 
-      (new Reference($tables[0], 'tabble'))
-      ->onDelete(ReferenceAction::CASCADE)->onUpdate(ReferenceAction::CASCADE)
+      (new Reference($tables[0], ReferenceAction::CASCADE, ReferenceAction::RESTRICT))
     , FALSE))->nonnull(),
   ]);
 

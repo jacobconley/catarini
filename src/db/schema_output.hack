@@ -33,15 +33,10 @@ class SchemaWriter {
 
         $t_i /* u can have whatever u like */ = Vec\first_key($tables,  $x ==> $x->getName() === $ref->getReferencedTable()->getName());
         $table = "\$tables[$t_i]";
-        $alias = $ref->getAlias();
 
         $cb->indent();
         $cb->ensureNewLine();
-        $cb->addf("(new Reference(%s, %s))", $table, $alias is null ? 'NULL' : "'$alias'");
-
-        $cb->ensureNewLine();
-        $cb->addf("->onDelete(ReferenceAction::%s)", $ref->getDeleteAction() as string);
-        $cb->addf("->onUpdate(ReferenceAction::%s)", $ref->getUpdateAction() as string); 
+        $cb->addf("(new Reference(%s, ReferenceAction::%s, ReferenceAction::%s))", $table, $ref->getUpdateAction() as string, $ref->getDeleteAction() as string);
         $cb->addIf($ref->isNullable(), "->nullable()");
 
         $cb->unindent();

@@ -3,7 +3,7 @@ use catarini\db\backend\mysql\EntityQuery; // [!!!!]
 use catarini\db\querying\{ Entity, EntityQueryTarget }; 
 
 use catarini\db\Type; 
-use catarini\db\schema\{ Column, Table, Reference, Cardinality, Relationship, RelationshipEnd };
+use catarini\db\schema\{ Column, Table, Reference, ReferenceAction, Cardinality, Relationship, RelationshipEnd };
 
 
 use function Facebook\FBExpect\expect;
@@ -43,10 +43,10 @@ class MySQL_EntityQueryTest extends Facebook\HackTest\HackTest {
     private function tbl__student_class() : Table { 
         return new Table( 'student_class', vec[ 
             new Column(Type::INT, 'student_id',  
-                new Reference($this->tbl__student(), NULL)
+                new Reference($this->tbl__student(), ReferenceAction::CASCADE, ReferenceAction::CASCADE)
             , TRUE), 
             new Column(Type::INT, 'class_id',   
-                new Reference($this->tbl__class(), NULL)
+                new Reference($this->tbl__class(),  ReferenceAction::CASCADE, ReferenceAction::CASCADE)
             , TRUE), 
         ]);
     }

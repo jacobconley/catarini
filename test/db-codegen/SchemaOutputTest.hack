@@ -2,7 +2,8 @@ use function Facebook\FBExpect\expect;
 use function Facebook\TypeAssert\not_null;
 use function count; 
 
-use catarini\db\{ Table, Column, Type }; 
+use catarini\db\{ Type };
+use catarini\db\schema\{ Table, Column, Reference, ReferenceAction, Relationship, RelationshipEnd, Cardinality }; 
 
 class SchemaOutputTest extends Facebook\HackTest\HackTest { 
 
@@ -58,7 +59,8 @@ class SchemaOutputTest extends Facebook\HackTest\HackTest {
 
         expect($ref)->toNotBeNull();  $ref = not_null($ref);
         expect($ref->getReferencedTable()->getName())->toBeSame('tibble');
-        expect($ref->getAlias())->toBeSame('tabble');
+        expect($ref->getUpdateAction())->toBeSame(ReferenceAction::CASCADE);
+        expect($ref->getDeleteAction())->toBeSame(ReferenceAction::RESTRICT);
     }
 
 

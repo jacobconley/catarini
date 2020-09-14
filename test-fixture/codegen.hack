@@ -31,7 +31,7 @@ function _test_codegen_main() : void {
     $tables[] = new Table('other', vec[
         (new Column(Type::INT, 'id', NULL, TRUE))->nonnull()->unique(),
         (new Column(Type::INT, 'tibble_id', 
-            new Reference($tables[0], 'tabble'),
+            new Reference($tables[0], ReferenceAction::CASCADE, ReferenceAction::RESTRICT),
         FALSE))->nonnull()
     ]);
 
