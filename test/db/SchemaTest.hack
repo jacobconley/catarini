@@ -1,5 +1,6 @@
 use catarini\db\{ Database, Type };
 use catarini\db\schema\{ Column, table_creator, table_changer }; 
+use catarini\db\schema\{ Schema, Table, Reference, ReferenceAction, Cardinality, Relationship, RelationshipEnd };
 
 use function Facebook\FBExpect\expect; 
 
@@ -50,7 +51,12 @@ class SchemaTest extends Facebook\HackTest\HackTest {
     }
 
     //TODO: Test change column 
+    
 
 
-    // Maybe test if schema loads w/ reflection?  that's a different usage lol
+    //
+    // Relationship tests
+    //
+
+    // A nice test case!
 }

@@ -97,18 +97,23 @@ final class RelationshipEnd {
     public function getName() : string { return $this->alias ?? $this->table->getName(); }
 }
 
-final class Relationship { 
+
+class Relationship { 
 
     //TODO: string "id"?  constraint IDs?  
 
-    private Schema $schema;
+    protected Schema $schema;
 
-    private  RelationshipEnd $left;
-    private ?RelationshipEnd $right; 
-    private ?Table $intermediate;
+    protected  RelationshipEnd $left;
+    protected ?RelationshipEnd $right; 
 
 
-    private ?string $id; 
+    protected ?string $id; 
+
+
+    //
+    //
+    //
 
     public function __construct(Schema $parent, RelationshipEnd $left, ?RelationshipEnd $right, ?string $id) { 
         $this->schema       = $parent;
@@ -119,7 +124,7 @@ final class Relationship {
 
 
     // Initializers
-    public static function API(Schema $parent, string $left_table_name, ?string $left_alias) : this { 
+    public static function API(Schema $parent, string $left_table_name, ?string $left_alias) : Relationship { 
         $tbl = $parent->getTable($left_table_name);
         // Arbitrary default - This should always be overriden by the "Finalizers" before inserting to the schema 
         $cardinality = Cardinality::OPTIONAL;
@@ -128,12 +133,13 @@ final class Relationship {
     }
 
 
-
-    public function getIntermediate() : ?Table { return $this->intermediate; }
-
     public function getID() : string { 
         return $this->id   ??   $this->left->getName().'_'.$this->getRight()->getName(); 
     }
+
+
+
+    public function isIncomplete() : bool { return ($this->right is null); }
 
     // Accessors
     // By the time this object is inserted into the Schema, both left and right tables should always be initialized
@@ -144,19 +150,18 @@ final class Relationship {
 
 
 
-
-
     // for now, presume this is the owned table 
     /**
      * Sets the right operand of this relationship, which is presumed to be the "owned" table - i.e. the one with the referencing foreign key. 
      * [!] This function overwrites $this->left->cardinality, to either OPTIONAL or MANDATORY based on the nullability of the foreign key.
+     *  (This behavior likely to be removed - see https://github.com/jacobconley/catarini/issues/39)
      * By default, $owned_attr will default to the name of a unique foreign key referencing the given table.  If no such key exists, an exception will be thrown.
      * @throws InvalidOperation If a suitable default cannot be found; see above 
      * @param $name Name of the table, which will be used to reference it within the parent `Schema`
      * @param $owned_attr The name of the foreign key in this (the right) table which references the left table.  See description for default behavior
      * @param $alias The name of the right side of the relationship from the perspective of the left.
      */
-    private function setRightTable(string $name, ?string $owned_attr, ?string $alias) : void { 
+    protected function setRightTable(string $name, ?string $owned_attr, ?string $alias) : void { 
         $right = $this->schema->getTable($name); 
 
         $owned_col =   $owned_attr is nonnull ?  $right->getColumn($owned_attr)  :  $right->getColumnReferencing($right);
@@ -179,9 +184,9 @@ final class Relationship {
     //
     //
 
-    public function nonmutual() : this { $this->left->cardinality = Cardinality::HIDDEN;  return $this; }
-
-
+    public function through(string $intermediate) : RelationshipThrough { 
+        return RelationshipThrough::JOIN($this, $this->schema->getTable($intermediate));
+    }
 
     //
     // Finalizers
@@ -197,7 +202,7 @@ final class Relationship {
         return $this; 
     }
 
-    public function mayHaveOne(string $name, ?string $attr = NULL, ?string $alias = Null) : this { 
+    public function hasOptional(string $name, ?string $attr = NULL, ?string $alias = Null) : this { 
         $this->setRightTable($name, $attr, $alias);
         $this->getRight()->cardinality  = Cardinality::OPTIONAL;
         return $this; 
@@ -209,18 +214,47 @@ final class Relationship {
         return $this; 
     }
 
-    public function hasManyThrough(string $intermediate, string $name, ?string $attr = NULL, ?string $alias = NULL) : this { 
+}
+
+
+final class RelationshipThrough extends Relationship { 
+
+    private Table $intermediate;
+    public function getIntermediate() : Table { return $this->intermediate; }
+
+    public function __construct(Schema $parent, RelationshipEnd $left, Table $intermediate, ?RelationshipEnd $right, ?string $id) { 
+        parent::__construct($parent, $left, $right, $id); 
+        $this->intermediate = $intermediate;
+    }
+    public static function JOIN(Relationship $r, Table $intermediate) : this { 
+        return new RelationshipThrough($r->schema, $r->left, $intermediate, $r->right, $r->getID());
+    }
+
+    public function hasMany(string $name, ?string $attr = NULL, ?string $alias = NULL) : this { 
         $this->setRightTable($name, $attr, $alias);
-        $this->getRight()->cardinality = Cardinality::AGGREGATION;
-        $this->intermediate = $this->schema->getTable($intermediate); 
+        $this->getLeft()->cardinality   = Cardinality::HIDDEN; 
+        $this->getRight()->cardinality  = Cardinality::AGGREGATION;
         return $this; 
     }
 
-    public function manyToManyThrough(string $intermediate, string $name, ?string $attr = NULL, ?string $alias = NULL) : this { 
+    public function manyToMany(string $name, ?string $attr = NULL, ?string $alias = NULL) : this { 
         $this->setRightTable($name, $attr, $alias);
         $this->getLeft()->cardinality   = Cardinality::AGGREGATION; 
         $this->getRight()->cardinality  = Cardinality::AGGREGATION;
-        $this->intermediate = $this->schema->getTable($intermediate); 
+        return $this; 
+    }
+
+    public function optionalToMany(string $name, ?string $attr = NULL, ?string $alias = NULL) : this { 
+        $this->setRightTable($name, $attr, $alias);
+        $this->getLeft()->cardinality   = Cardinality::OPTIONAL; 
+        $this->getRight()->cardinality  = Cardinality::AGGREGATION;
+        return $this; 
+    }
+
+    public function oneToMany(string $name, ?string $attr = NULL, ?string $alias = NULL) : this { 
+        $this->setRightTable($name, $attr, $alias);
+        $this->getLeft()->cardinality   = Cardinality::MANDATORY; 
+        $this->getRight()->cardinality  = Cardinality::AGGREGATION;
         return $this; 
     }
 }

@@ -25,6 +25,8 @@ class SchemaWriter {
     }    
 
 
+
+
     private function _hackReference(HackBuilder $cb, ?Reference $ref, vec<Table> $tables) : void { 
         if($ref is null) { 
             $cb->add('NULL');
@@ -42,6 +44,9 @@ class SchemaWriter {
         $cb->unindent();
         $cb->ensureNewLine();
     }
+
+
+
 
     private function _hackColumn(HackBuilder $cb, Column $col, vec<Table> $tables) : void { 
         $type = $col->getType();
@@ -97,6 +102,11 @@ class SchemaWriter {
         foreach($tables as $table) { 
             $this->_hackTable($tbc, $table, $tables);
         }
+
+
+        //
+        // Here it is!  Here's the codegen!!
+        //
 
         
         $cg->useNamespace('catarini\db')

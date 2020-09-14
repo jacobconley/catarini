@@ -5,21 +5,9 @@ use catarini\db\schema\{ Table, Column, Schema, Reference, ReferenceAction, Rela
 use catarini\db\migration\SchemaWriter;
 use catarini\db\backend\mysql; 
 
-<<__EntryPoint>>
-function _test_codegen_main() : void { 
 
-
-    // This is where all of our test cases are defined for codegen stuff
-    //  maybe theres a better way idk
-
-
-    /*                          *
-     *     SchemaOutputTest     *
-     *                          */
-
-
-
-    $dir = _test_dir().'/output/';
+// A nice test case, used for static schema tests as well as codegen tests 
+function _test_relationship_schema() : Schema { 
 
     $tables = vec[];
     
@@ -37,9 +25,29 @@ function _test_codegen_main() : void {
 
     $relationships = vec[]; 
 
-    $schema = new Schema($tables, $relationships); 
+    return new Schema($tables, $relationships); 
+}
 
 
+
+
+
+<<__EntryPoint>>
+function _test_codegen_main() : void { 
+
+
+    // This is where all of our test cases are defined for codegen stuff
+    //  maybe theres a better way idk
+
+
+    /*                          *
+     *     SchemaOutputTest     *
+     *                          */
+
+
+
+    $dir = _test_dir().'/output/';
+    $schema = _test_relationship_schema();
 
 
     // (testBasic) 
