@@ -2,7 +2,7 @@
 /**
  * This file is generated. Do not modify it manually!
  *
- * @generated SignedSource<<0b238d94e1820196b76b7e3e9ec23991>>
+ * @generated SignedSource<<21f977e1a8c8c8f29a3a34143c87eb70>>
  */
 namespace _catarini_test;
 use namespace catarini\db;
@@ -12,16 +12,41 @@ use type catarini\db\schema\{ Table, Column, Schema, Reference, ReferenceAction,
 function _db_schema(): Schema {
   $tables = vec[];
 
-  $tables[] = new Table("tibble", vec[
-    (new Column(Type::INT, "id", NULL, TRUE))->nonnull()->unique(),
-    (new Column(Type::INT, "test", NULL, FALSE)),
+  $tables[] = new Table("teacher", vec[
+    (new Column(Type::INT, "id", NULL, TRUE)),
+    (new Column(Type::STRING, "name", NULL, FALSE)),
   ]);
 
-  $tables[] = new Table("other", vec[
-    (new Column(Type::INT, "id", NULL, TRUE))->nonnull()->unique(),
-    (new Column(Type::INT, "tibble_id", 
+  $tables[] = new Table("subject", vec[
+    (new Column(Type::INT, "id", NULL, TRUE)),
+    (new Column(Type::STRING, "name", NULL, FALSE)),
+  ]);
+
+  $tables[] = new Table("class", vec[
+    (new Column(Type::INT, "id", NULL, TRUE)),
+    (new Column(Type::STRING, "subject", 
+      (new Reference($tables[1], ReferenceAction::CASCADE, ReferenceAction::RESTRICT))
+    , FALSE)),
+    (new Column(Type::INT, "teacher_id", 
       (new Reference($tables[0], ReferenceAction::CASCADE, ReferenceAction::RESTRICT))
-    , FALSE))->nonnull(),
+    , FALSE)),
+  ]);
+
+  $tables[] = new Table("student", vec[
+    (new Column(Type::INT, "id", NULL, TRUE)),
+    (new Column(Type::STRING, "name", NULL, FALSE)),
+    (new Column(Type::INT, "favorite_subject", 
+      (new Reference($tables[1], ReferenceAction::CASCADE, ReferenceAction::SET_NULL))
+    , FALSE)),
+  ]);
+
+  $tables[] = new Table("student_class", vec[
+    (new Column(Type::INT, "student_id", 
+      (new Reference($tables[3], ReferenceAction::CASCADE, ReferenceAction::CASCADE))
+    , TRUE)),
+    (new Column(Type::INT, "class_id", 
+      (new Reference($tables[2], ReferenceAction::CASCADE, ReferenceAction::CASCADE))
+    , TRUE)),
   ]);
 
   $relationships = vec[];

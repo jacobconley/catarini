@@ -25,8 +25,10 @@ final class Schema {
 
 
     private vec<Table> $tables; 
-
+    private vec<Relationship> $relationships;
     public function getTables() : vec<Table> { return $this->tables; }
+    public function getRelationships() : vec<Relationship> { return $this->relationships; }
+    public function setRelationships(vec<Relationship> $x) : void { $this->relationships = $x; }
 
     public function hasTable(string $name) : bool { 
         return (Vec\find_first_key($this->tables, $x ==> $x->getName() === $name) is nonnull); 
@@ -37,18 +39,23 @@ final class Schema {
 
 
 
-    private vec<Relationship> $relationships; 
-
-
-
     //
     // API Functions
     //
 
 
     public function associate(string $table_name, ?string $alias = NULL) : Relationship { 
-        return Relationship::API($this, $table_name, $alias); 
+        $x = Relationship::API($this, $table_name, $alias); 
+        $this->relationships[] = $x; 
+        return $x; 
     }
 
 
+    public function __relationship_through(Relationship $x, string $intermediate) : RelationshipThrough { 
+        $this->relationships = Vec\without($this->relationships, $x); 
+        $y = RelationshipThrough::JOIN($x, $this->getTable($intermediate));
+        
+        $this->relationships[] = $y; 
+        return $y; 
+    }
 }

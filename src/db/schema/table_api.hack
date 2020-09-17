@@ -67,7 +67,7 @@ class table_changer extends table_creator {
 
     public function del(string $name) : void { 
         $this->deletedNames[] = $name; 
-        $this->cols =   Vec\first_key($this->cols, $x ==>  $x->getName() === $name  )  |>  Vec\without($this->cols, $$); 
+        $this->cols =   Vec\first_key($this->cols, $x ==>  $x->getName() === $name  )  |>  Vec\without_keys($this->cols, $$); 
     }
 
     public function change(string $name) : column_changer { 

@@ -53,7 +53,7 @@ function first_where<Tk, Tv>(KeyedContainer<arraykey, Tv> $container, (function(
  * [UNOFFICIAL] Returns a vec equivalent to the given `$traversable` except without the elements corresponding to the given array keys.
  * This facilitates de-facto removal of elements from vecs, which is not directly allowed. 
  */
-function without<Tv>(Traversable<Tv> $traversable, int ...$key) : vec<Tv> { 
+function without_keys<Tv>(Traversable<Tv> $traversable, int ...$key) : vec<Tv> { 
     $res = vec[];
 
     $i = -1;
@@ -64,4 +64,15 @@ function without<Tv>(Traversable<Tv> $traversable, int ...$key) : vec<Tv> {
     }
 
     return $res; 
+}
+
+/**
+ * [UNOFFICIAL] Returns a vec equivalent to the given `$traversable` except without the given element(s). 
+ * This facilitates de-facto removal of elements from vecs, which is not directly allowed.
+ * This is equivalent to 
+ */
+
+function without<Tv>(Traversable<Tv> $traversable, Tv ...$objects) : vec<Tv> { 
+    // Not sure about the usage of the PHP holdover `in_array` here - does it perform strict equality checks?  
+    return filter($traversable,    $x ==> !(\in_array($x, $objects))    );
 }

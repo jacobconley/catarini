@@ -3,6 +3,7 @@ namespace catarini\db\backend\mysql;
 
 use catarini\db; 
 use catarini\db\schema\{ Schema };
+use catarini\log; 
 
 use HH\Lib\{ Vec, Str }; 
 
@@ -18,6 +19,26 @@ use Facebook\HackCodegen\{
 
 // Invoked by the CLI to generate entity files 
 
+
+
+/*
+   Uhh.  Uuuuufh hrng
+   this function takes names and returns better, more ~acceptable~ names
+   I didn't want to do this but then I made a test schema with a table named "class".... yeeeesh 
+   The original plan was to just make stuff like that but I'd have to migrate my tests.  maybe I will idfk 
+ */
+function entity_name(string $name) : string { 
+    $name = Str\capitalize($name); 
+
+    //TODO:  Prefixing options?  
+
+    switch($name) { 
+        case "Class":   return "DB$name"; 
+        default:        return $name;
+    } 
+}
+
+
 function entity_out(Schema $schema, string $dir, ?string $namespace = NULL) : void { 
 
     \catarini\util\ensure_dir($dir); 
@@ -29,9 +50,10 @@ function entity_out(Schema $schema, string $dir, ?string $namespace = NULL) : vo
 
     foreach($tables as $table) 
     { 
-        $name = $table->getName();
+        $name = entity_name($table->getName());
         $path = "$dir/$name.php";
         $file = $hack->codegenFile($path); 
+        log\write_file($path); 
 
         if($namespace is nonnull) $file->setNamespace($namespace); 
 

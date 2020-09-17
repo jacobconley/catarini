@@ -11,60 +11,7 @@ use function count;
 
 class MySQL_EntityQueryTest extends Facebook\HackTest\HackTest { 
     
-
-    //
-    // Schema A
-    //
-
-    /*
-
-        belongs_to - "references" better?  
-
-        parent -|---|<- student -|---|- student_class -|---|-   class ->|------------|- teacher
-                    belongs_to parent   join table              belongs_to teacher      
-                    has_mutual class    belongs to each         has_mutual student      has_many class
-
-    */
-
-
-    private function tbl__parent() : Table { 
-        return new Table( 'parent', vec[ 
-            new Column(Type::INT, 'id', NULL, TRUE),
-            new Column(Type::STRING, 'name') 
-        ]);
-    }
-    private function tbl__student() : Table { 
-        return new Table( 'student', vec[ 
-            new Column(Type::INT, 'id', NULL, TRUE),
-            new Column(Type::STRING, 'name'), 
-            new Column(Type::INT, 'parent_id') 
-        ]);
-    }
-    private function tbl__student_class() : Table { 
-        return new Table( 'student_class', vec[ 
-            new Column(Type::INT, 'student_id',  
-                new Reference($this->tbl__student(), ReferenceAction::CASCADE, ReferenceAction::CASCADE)
-            , TRUE), 
-            new Column(Type::INT, 'class_id',   
-                new Reference($this->tbl__class(),  ReferenceAction::CASCADE, ReferenceAction::CASCADE)
-            , TRUE), 
-        ]);
-    }
-    private function tbl__class() : Table { 
-        return new Table( 'class', vec[ 
-            new Column(Type::INT, 'id', NULL, TRUE),
-            new Column(Type::STRING, 'subject'), 
-            new Column(Type::INT, 'teacher_id') 
-        ]);
-    }
-    private function tbl__teacher() : Table { 
-        return new Table('teacher', vec[ 
-            new Column(Type::INT, 'id', NULL, TRUE),
-            new Column(Type::STRING, 'name') 
-        ]); 
-    }
-
-
+    // lazy 
     private function TableQuery(Table $table) : EntityQuery<Entity> { 
         return new EntityQuery(new EntityQueryTarget($table));
     }
@@ -82,12 +29,12 @@ class MySQL_EntityQueryTest extends Facebook\HackTest\HackTest {
 
     public function testSimpleFetch() : void { 
 
-        $q = $this->TableQuery($this->tbl__parent());
+        $q = $this->TableQuery(TestSchema::GET()->student);
         $q->__condition_pk(23);
 
-        expect($q->__SELECT())  ->toBeSame("SELECT parent.id, parent.name\n");
-        expect($q->__FROM())    ->toBeSame("\nFROM parent\n");
-        expect($q->__WHERE())   ->toBeSame("\nWHERE parent.id = %d\n");
+        expect($q->__SELECT())  ->toBeSame("SELECT student.id, student.name, student.favorite_subject\n");
+        expect($q->__FROM())    ->toBeSame("\nFROM student\n");
+        expect($q->__WHERE())   ->toBeSame("\nWHERE student.id = %d\n");
     }
 
 
@@ -97,20 +44,22 @@ class MySQL_EntityQueryTest extends Facebook\HackTest\HackTest {
 
 
     public function testJoin() : void { 
-        $info = (new EntityQueryTarget($this->tbl__parent()))
-            ->join('id', $this->tbl__student(), 'parent_id');
+        $tables = TestSchema::GET();
+        $info = (new EntityQueryTarget($tables->teacher))
+            ->join('id', $tables->class, 'teacher_id');
         $q = (new EntityQuery($info));
 
-        expect($q->__SELECT())  ->toBeSame("SELECT student.id, student.name, student.parent_id\n");
-        expect($q->__FROM())    ->toBeSame("\nFROM parent\nJOIN student ON parent.id = student.parent_id\n");
+        expect($q->__SELECT())  ->toBeSame("SELECT class.id, class.subject, class.teacher_id\n");
+        expect($q->__FROM())    ->toBeSame("\nFROM teacher\nJOIN class ON teacher.id = class.teacher_id\n");
     }
 
 
 
     public function testIntermediate() : void 
     { 
-        $q = (new EntityQueryTarget($this->tbl__student()))
-            ->join_through($this->tbl__student_class(), 'student_id', 'class_id', $this->tbl__class())
+        $tables = TestSchema::GET();
+        $q = (new EntityQueryTarget($tables->student))
+            ->join_through($tables->student_class, 'student_id', 'class_id', $tables->class)
             |> new EntityQuery($$); 
 
 
@@ -130,33 +79,34 @@ SQL;
 
 
 
-    //
-    //TODO: Test variable placeholders?  Conditions?  and such 
-    //
+//     //
+//     //TODO: Test variable placeholders?  Conditions?  and such 
+//     //
 
 
 
-    //
-    //
-    //
-    // Integration Tests
-    //
-    //
-    //
+//     //
+//     //
+//     //
+//     // Integration Tests
+//     //
+//     //
+//     //
 
     public function testLinkedQuery() : void { 
+        $tables = TestSchema::GET();
 
-        $q1 =  (new EntityQueryTarget($this->tbl__parent()))
+        $q1 =  (new EntityQueryTarget($tables->student))
             |> (new EntityQuery($$))
             -> __condition_pk(23); 
 
-        $q2 = (new EntityQueryTarget($this->tbl__parent()))
-            ->join('id', $this->tbl__student(), 'parent_id')
-            |> new EntityQuery($$); 
+        $q2 = (new EntityQueryTarget($tables->student))
+            ->join_through($tables->student_class, 'student_id', 'class_id', $tables->class)
+            |> new EntityQuery($$, vec[ $q1 ]);
 
-        $q  = (new EntityQueryTarget($this->tbl__student()))
-            ->join_through($this->tbl__student_class(), 'student_id', 'class_id', $this->tbl__class())
-            |> new EntityQuery($$, vec[$q1, $q2]);
+        $q  = (new EntityQueryTarget($tables->class))
+            ->join('teacher_id', $tables->teacher, 'id')
+            |> new EntityQuery($$, vec[ $q1, $q2 ]);
         
         $q->__condition_pk(23); 
 
@@ -164,18 +114,17 @@ SQL;
         
         $FROM = <<< SQL
 
-FROM parent
-JOIN student ON parent.id = student.parent_id
+FROM student
 JOIN student_class ON student.id = student_class.student_id
 JOIN class ON student_class.class_id = class.id
+JOIN teacher ON class.teacher_id = teacher.id
 
 SQL;
 
 
-        expect($q->__SELECT())  ->toBeSame("SELECT class.id, class.subject, class.teacher_id\n");
+        expect($q->__SELECT())  ->toBeSame("SELECT teacher.id, teacher.name\n");
         expect($q->__FROM())    ->toBeSame($FROM); 
-        expect($q->__WHERE())   ->toBeSame("\nWHERE parent.id = %d\nAND class.id = %d\n");
-
+        expect($q->__WHERE())   ->toBeSame("\nWHERE student.id = %d\nAND teacher.id = %d\n");
     }
 
 }

@@ -7,3 +7,12 @@ function query(string $query) : void {
     echo($log."\n"); 
     \error_log($log); 
 }
+
+
+function write_file(string $file) : void { 
+    echo "[-] Writing to $file\n";
+}
+
+function create_dir(string $dir) : void { 
+    echo "[-] Creating $dir\n";
+}

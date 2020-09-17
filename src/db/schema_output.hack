@@ -12,6 +12,7 @@ use HH\Lib\{ Vec };
 
 use catarini\db\schema\{ Schema, Table, Column, Reference, Cardinality, RelationshipEnd, Relationship }; 
 use function catarini\db\typeToString;
+use catarini\log; 
 
 
 class SchemaWriter { 
@@ -87,10 +88,10 @@ class SchemaWriter {
     public function writeHack(?string $namespace) : void { 
         $dir = $this->dir; 
         \catarini\util\ensure_dir($dir); 
-        $path = $dir.'schema.php';  //TODO: Change to .hack when updating codegen version?
+        $path = $dir.'/schema.php';  //TODO: Change to .hack when updating codegen version?
                                     // This oughtta be logged..
 
-        echo "[-] Writing $path\n"; 
+        log\write_file($path); 
 
         $hack = new HackCodegenFactory(new HackCodegenConfig()); 
         $cg = $hack->codegenFile($path);

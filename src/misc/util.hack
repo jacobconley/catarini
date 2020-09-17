@@ -1,5 +1,7 @@
 namespace catarini\util;
 
+use catarini\log; 
+
 function ensure_dir(string $dir) : void 
 { 
         if(!\is_dir($dir)) {
@@ -7,7 +9,7 @@ function ensure_dir(string $dir) : void
                 throw new \Exception("Trying to create directory`$dir`, but there exists a file of the same name"); 
             }
             else { 
-                echo "[-] Creating directory $dir\n"; 
+                log\create_dir($dir); 
                 \mkdir($dir); 
             }
         }

@@ -46,11 +46,11 @@ final class Reference {
 
 
     // ReferenceActions
+    // All of these API functions only do onDelete... gotta make this very very very clear 
 
     public function nullify() : this { 
         $this->nullable = TRUE; 
         $this->onDelete = ReferenceAction::SET_NULL;
-        $this->onUpdate = ReferenceAction::SET_NULL;
         return $this; 
     }
 
@@ -60,17 +60,19 @@ final class Reference {
     
     public function cascade() : this { 
         $this->onDelete = ReferenceAction::CASCADE;
-        $this->onUpdate = ReferenceAction::CASCADE;
         return $this;
     }
 
     public function restrict() : this { 
         $this->onDelete = ReferenceAction::RESTRICT;
-        $this->onUpdate = ReferenceAction::RESTRICT;
         return $this;
     }
 
 }
+
+
+
+
 
 
 enum Cardinality : string { 
@@ -79,6 +81,7 @@ enum Cardinality : string {
     AGGREGATION = 'AGGREGATION'; 
     HIDDEN      = 'HIDDEN';
 }
+
 
 final class RelationshipEnd { 
     public Table $table; 
@@ -96,6 +99,7 @@ final class RelationshipEnd {
 
     public function getName() : string { return $this->alias ?? $this->table->getName(); }
 }
+
 
 
 class Relationship { 
@@ -185,7 +189,7 @@ class Relationship {
     //
 
     public function through(string $intermediate) : RelationshipThrough { 
-        return RelationshipThrough::JOIN($this, $this->schema->getTable($intermediate));
+        return $this->schema->__relationship_through($this, $intermediate);
     }
 
     //
