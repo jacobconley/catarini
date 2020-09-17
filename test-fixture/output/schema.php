@@ -2,12 +2,12 @@
 /**
  * This file is generated. Do not modify it manually!
  *
- * @generated SignedSource<<21f977e1a8c8c8f29a3a34143c87eb70>>
+ * @generated SignedSource<<03e0f1c5865b5fdcd712ade797a0ab69>>
  */
 namespace _catarini_test;
 use namespace catarini\db;
 use type catarini\db\Type;
-use type catarini\db\schema\{ Table, Column, Schema, Reference, ReferenceAction, Relationship, RelationshipEnd, Cardinality };
+use type catarini\db\schema\{ Table, Column, Schema, Reference, ReferenceAction, Relationship, RelationshipEnd, RelationshipThrough, Cardinality };
 
 function _db_schema(): Schema {
   $tables = vec[];
@@ -49,7 +49,28 @@ function _db_schema(): Schema {
     , TRUE)),
   ]);
 
+
+  $schema = new Schema($tables);
   $relationships = vec[];
 
-  return new Schema($tables, $relationships);
+  $relationships[] = new RelationshipThrough($schema,
+    new RelationshipEnd($tables[3], Cardinality::AGGREGATION, 'student'),
+    $tables[4],
+    new RelationshipEnd($tables[2], Cardinality::AGGREGATION, 'class'),
+    'student_class'
+  );
+  $relationships[] = new Relationship($schema,
+    new RelationshipEnd($tables[0], Cardinality::MANDATORY, 'teacher'),
+    new RelationshipEnd($tables[2], Cardinality::AGGREGATION, 'class'),
+    'teacher_class'
+  );
+  $relationships[] = new Relationship($schema,
+    new RelationshipEnd($tables[1], Cardinality::HIDDEN, 'subject'),
+    new RelationshipEnd($tables[3], Cardinality::AGGREGATION, 'student'),
+    'students_favorited'
+  );
+
+
+  $schema->setRelationships($relationships);
+  return $schema;
 }

@@ -8,9 +8,9 @@ use Facebook\HackCodegen\{
     HackBuilder
 };
 
-use HH\Lib\{ Vec };
+use HH\Lib\{ Vec, Str};
 
-use catarini\db\schema\{ Schema, Table, Column, Reference, Cardinality, RelationshipEnd, Relationship }; 
+use catarini\db\schema\{ Schema, Table, Column, Reference, Cardinality, RelationshipEnd, Relationship, RelationshipThrough }; 
 use function catarini\db\typeToString;
 use catarini\log; 
 
@@ -26,6 +26,9 @@ class SchemaWriter {
     }    
 
 
+    //
+    // Render tables
+    //
 
 
     private function _hackReference(HackBuilder $cb, ?Reference $ref, vec<Table> $tables) : void { 
@@ -47,8 +50,6 @@ class SchemaWriter {
     }
 
 
-
-
     private function _hackColumn(HackBuilder $cb, Column $col, vec<Table> $tables) : void { 
         $type = $col->getType();
 
@@ -68,6 +69,8 @@ class SchemaWriter {
         $cb->ensureNewLine();
     }
 
+    // Currently these functions depend on the ordering of the tables vec to establish references to each other
+    // This gives rise to some limitations we need to address [Issue #41]
 
     private function _hackTable(HackBuilder $cb, Table $table, vec<Table> $previous) : void { 
         $cb->addf('$tables[] = new Table("%s", vec[', $table->getName());
@@ -83,6 +86,55 @@ class SchemaWriter {
 
 
 
+    //
+    // Render relationshps
+    // 
+
+    private function tblIndex(vec<Table> $tables, string $name) : string { 
+        return Str\format('$tables[%d]', Vec\first_key($tables,  $x ==>    $x->getName() == $name   ));
+    }
+    private function _hackRelationshipEnd(vec<Table> $tables, RelationshipEnd $end) : string { 
+        return Str\format('new RelationshipEnd(%s, Cardinality::%s, \'%s\')',  $this->tblIndex($tables, $end->table->getName()),  $end->cardinality as string,  $end->getName());
+    }
+
+
+    private function _hackRelationship(HackBuilder $cb, Relationship $relationship, vec<Table> $tables) : void { 
+
+        $left       = $relationship->getLeft();
+        $right      = $relationship->getRight();
+        $left_end   = $this->_hackRelationshipEnd($tables, $left);
+        $right_end  = $this->_hackRelationshipEnd($tables, $right); 
+
+        if($relationship is RelationshipThrough) { 
+            $tbl_mid    = $this->tblIndex($tables, $relationship->getIntermediate()->getName());
+
+            $cb->addLine('$relationships[] = new RelationshipThrough($schema,');
+            $cb->indent();
+            $cb->addLine("$left_end,");
+            $cb->addLine("$tbl_mid,");
+            $cb->addLine("$right_end,");
+            $cb->addLine("'".$relationship->getID()."'");
+
+        } else { 
+
+            $cb->addLine('$relationships[] = new Relationship($schema,');
+            $cb->indent();
+            $cb->addLine("$left_end,");
+            $cb->addLine("$right_end,");
+            $cb->addLine("'".$relationship->getID()."'");
+        }
+
+        $cb->unindent();
+        $cb->addLine(');');
+        $cb->ensureNewLine();
+    }
+
+
+
+    // 
+    // Here it is!  Rendering!
+    //
+    
 
 
     public function writeHack(?string $namespace) : void { 
@@ -104,6 +156,12 @@ class SchemaWriter {
             $this->_hackTable($tbc, $table, $tables);
         }
 
+        $relationships = $this->schema->getRelationships();
+        $hack_rel = $hack->codegenHackBuilder();
+        foreach ($relationships as $rel) { 
+            $this->_hackRelationship($hack_rel, $rel, $tables);
+        }
+
 
         //
         // Here it is!  Here's the codegen!!
@@ -112,7 +170,7 @@ class SchemaWriter {
         
         $cg->useNamespace('catarini\db')
             ->useType('catarini\db\Type')
-            ->useType('catarini\db\schema\{ Table, Column, Schema, Reference, ReferenceAction, Relationship, RelationshipEnd, Cardinality }')
+            ->useType('catarini\db\schema\{ Table, Column, Schema, Reference, ReferenceAction, Relationship, RelationshipEnd, RelationshipThrough, Cardinality }')
 
             ->addFunction(
                 $hack->codegenFunction('_db_schema')
@@ -126,9 +184,12 @@ class SchemaWriter {
                             ->ensureEmptyLine()
                             ->add($tbc->getCode())
 
+                            ->ensureEmptyLine()
+                            ->addLine('$schema = new Schema($tables);')
+                            ->addLine('$relationships = vec[];')
 
-                            ->add('$relationships = vec[];')
-                            ->ensureNewLine()
+                            ->ensureEmptyLine()
+                            ->addLine($hack_rel->getCode())
 
                             //TODO: Relationships ! 
 
@@ -138,9 +199,8 @@ class SchemaWriter {
 
 
                             ->ensureEmptyLine()
-                            ->add('return new Schema($tables, $relationships);')
-                            ->ensureNewLine()
-
+                            ->addLine('$schema->setRelationships($relationships);')
+                            ->addLine('return $schema;')
                             ->getCode()
                     )
         );

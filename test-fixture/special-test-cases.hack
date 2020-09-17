@@ -66,10 +66,10 @@ final class TestSchema {
         $this->tables = vec[ $this->teacher, $this->subject, $this->class, $this->student, $this->student_class ];
 
         $this->schema = new Schema($this->tables);
-        $this->relationships = vec[]; 
+        $relationships = vec[]; 
 
         // student_class
-        $this->relationships[] = new RelationshipThrough($this->schema, 
+        $relationships[] = new RelationshipThrough($this->schema, 
             new RelationshipEnd($this->student, Cardinality::AGGREGATION, 'student_id'),
             $this->student_class,
             new RelationshipEnd($this->class, Cardinality::AGGREGATION, 'class_id'),
@@ -77,21 +77,22 @@ final class TestSchema {
         );
 
         // teacher_class
-        $this->relationships[] = new Relationship($this->schema, 
+        $relationships[] = new Relationship($this->schema, 
             new RelationshipEnd($this->teacher, Cardinality::MANDATORY),
             new RelationshipEnd($this->class, Cardinality::AGGREGATION, 'teacher_id'),
             'teacher_class'
         );
 
         // students_favorited
-        $this->relationships[] = new Relationship($this->schema,
+        $relationships[] = new Relationship($this->schema,
             new RelationshipEnd($this->subject, Cardinality::HIDDEN),
             new RelationshipEnd($this->student, Cardinality::AGGREGATION, 'students_favorited'),
             'students_favorited'
         );
 
 
-        $this->schema->setRelationships($this->relationships); 
+        $this->schema->setRelationships($relationships); 
+        $this->relationships = $relationships;
     }
 
     <<__Memoize>>
