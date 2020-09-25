@@ -1,6 +1,6 @@
 vendor/
 
-test/env/output/
+test-fixture/output/
 
 test.hack
 deploy

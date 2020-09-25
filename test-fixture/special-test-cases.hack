@@ -100,6 +100,11 @@ final class TestSchema {
         return new TestSchema();
     }
 
+    // For unit tests; we don't want them interfering with each other 
+    public static function CLONE() : this { 
+        return new TestSchema();
+    }
+
 
     
 

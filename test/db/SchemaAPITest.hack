@@ -1,10 +1,10 @@
 use catarini\db\{ Database, Type };
 use catarini\db\schema\{ Column, table_creator, table_changer }; 
-use catarini\db\schema\{ Schema, Table, Reference, ReferenceAction, Cardinality, Relationship, RelationshipEnd };
+use catarini\db\schema\{ Schema, Table, Reference, ReferenceAction, Cardinality, Relationship, RelationshipEnd, RelationshipThrough };
 
 use function Facebook\FBExpect\expect; 
 
-class SchemaTest extends Facebook\HackTest\HackTest { 
+class SchemaAPITest extends Facebook\HackTest\HackTest { 
 
     // public function testCreate() : void { 
     //     $DB = $this->db(); 
@@ -58,5 +58,45 @@ class SchemaTest extends Facebook\HackTest\HackTest {
     // Relationship tests
     //
 
-    // A nice test case!
+
+    private static function newRelationship(Schema $schema) : Relationship 
+    { 
+        $table  = $schema->getTable('student');
+        $r = new Relationship($schema, new RelationshipEnd($table), NULL, NULL);
+        return $r; 
+    }
+
+
+
+
+    public function testRelationshipBasic() : void 
+    { 
+        $db = TestSchema::CLONE();
+        $r = SchemaAPITest::newRelationship($db->schema);
+
+        $r->hasOne('student_class');
+
+        $left = $r->getLeft();
+        expect($left->getName())->toBeSame('student');
+        expect($left->table)->toBeSame($db->student);
+
+        $right = $r->getRight();
+        expect($right->getName())->toBeSame('student_class');
+        expect($right->table)->toBeSame($db->student_class);
+        expect($right->cardinality)->toBeSame(Cardinality::MANDATORY);
+    }
+
+    public function testRelationshipThrough() : void 
+    { 
+        $db = TestSchema::CLONE();
+        $r = SchemaAPITest::newRelationship($db->schema);
+
+        $r = $r->through('student_class');
+        $r->hasMany('class');
+
+        expect($r)->toBeInstanceOf(RelationshipThrough::class);
+
+
+
+    }
 }
