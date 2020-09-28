@@ -39,23 +39,28 @@ function entity_name(string $name) : string {
 }
 
 
-function write(Schema $schema, string $dir, ?string $namespace = NULL) : void { 
+function write(\catarini\db\codegen\Codegen $parent,Schema $schema, string $pub_dir, ?string $pub_ns, string $priv_dir, string $priv_ns) : void { 
 
-    \catarini\util\ensure_dir($dir); 
+    \catarini\util\ensure_dir($pub_dir); 
+    \catarini\util\ensure_dir($priv_dir);
 
     $tables = $schema->getTables(); 
     
     $hack_config = new HackCodegenConfig();
     $hack = new HackCodegenFactory($hack_config); 
 
+    //
+    // Generating "private" base classes
+    //
     foreach($tables as $table) 
     { 
-        $name = entity_name($table->getName());
-        $path = "$dir/$name.php";
+        $name = $table->getEntityName();
+        $path = "$priv_dir/$name.php";
         $file = $hack->codegenFile($path); 
         log\write_file($path); 
 
-        if($namespace is nonnull) $file->setNamespace($namespace); 
+        
+        $file->setNamespace($priv_ns); 
 
         $classname = $name; 
 
@@ -212,5 +217,43 @@ function write(Schema $schema, string $dir, ?string $namespace = NULL) : void {
         
             ->save();
     }
+
+
+
+
+
+
+
+
+
+
+
+    //
+    // Generating "public" "userland" subclasses
+    // hrngh, we'll have to move this so that it doesnt override userland files later
+    //
+
+    
+    foreach($tables as $table) 
+    { 
+        $name = $table->getEntityName();
+
+        $path = "$pub_dir/$name.php";
+        $file = $hack->codegenFile($path); 
+        log\write_file($path); 
+
+        if($pub_ns is nonnull) $file->setNamespace($pub_ns); 
+
+
+        $file->addClass(
+
+            $hack->codegenClass($name)
+                ->setExtends($parent->getEntityBase($table))
+                ->setIsFinal(TRUE)
+
+        )
+        ->setIsSignedFile(FALSE)
+        ->save();
+    }   
 
 }

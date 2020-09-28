@@ -130,7 +130,7 @@ function hack_Relationship(HackBuilder $cb, Relationship $relationship, vec<Tabl
 
 
 
-function writeHack(Schema $schema, string $dir, ?string $namespace) : void { 
+function writeHack(\catarini\db\codegen\Codegen $parent, Schema $schema, string $dir, ?string $namespace) : void { 
     \catarini\util\ensure_dir($dir); 
     $path = $dir.'/schema.php';  //TODO: Change to .hack when updating codegen version?
                                 // This oughtta be logged..

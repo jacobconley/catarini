@@ -11,6 +11,9 @@ class Table {
     public function getName() : string { return $this->name; }
     public function getColumns() : vec<Column> { return $this->columns; }
 
+    //TODO: Address this [Issue #43]
+    public function getEntityName() : string { return \catarini\db\codegen\entities\entity_name($this->getName()); }
+
     public function getColumn(string $name) : Column { 
         return Vec\first_where($this->columns, $x ==> $x->getName() === $name); 
     }
@@ -33,6 +36,12 @@ class Table {
 
 
     public function getPrimaryColumns() : vec<Column> { return Vec\filter($this->columns,  $x ==> $x->isPrimary()  ); }
+
+    /**
+     * Returns the sole primary column within this table, if there is exactly one.  Otherwise, returns NULL.  
+     * Used to find ID attributes for entities; intentionally excludes composite primary keys such as that of a join table 
+     * @return See above
+     */
     public function getUniquePrimary() : ?Column { 
         $primaries = $this->getPrimaryColumns();
         return \count($primaries) == 1 ? $primaries[0] : NULL; 
