@@ -41,10 +41,6 @@ class Database implements db\DatabaseInstance {
     private vec<Table> $tables = vec[]; 
     private Schema $schema; 
 
-    public function getSchemaWriter(string $dir) : SchemaWriter { 
-        return new SchemaWriter($this->schema, $dir);
-    }
-
 
     public function addTable(string $name, TableCreatorBlock $block) : this { 
         $name = Str\lowercase($name); 
@@ -132,10 +128,5 @@ class Database implements db\DatabaseInstance {
 
         return new MigrationVersion(TypeAssert\not_null($cur), $prv);
     }
-
-
-    public function entity_out(Schema $schema, string $dir, ?string $namespace = NULL) : void { 
-        entity_out($schema, $dir, $namespace); 
-    }
-
+    
 }

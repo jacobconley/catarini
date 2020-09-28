@@ -27,7 +27,6 @@ abstract class ManualMigration implements Database {
     }
 
     public function getName() : string { return $this->name; }
-    public function getSchemaWriter(string $dir) : SchemaWriter { return $this->DB->getSchemaWriter($dir); }
     
 
     public function isReversible() : bool { return FALSE; }

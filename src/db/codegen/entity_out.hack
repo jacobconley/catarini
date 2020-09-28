@@ -1,4 +1,4 @@
-namespace catarini\db\backend\mysql; 
+namespace catarini\db\codegen\entities; 
 
 
 use catarini\db; 
@@ -25,7 +25,7 @@ use Facebook\HackCodegen\{
    Uhh.  Uuuuufh hrng
    this function takes names and returns better, more ~acceptable~ names
    I didn't want to do this but then I made a test schema with a table named "class".... yeeeesh 
-   The original plan was to just make stuff like that but I'd have to migrate my tests.  maybe I will idfk 
+   The original plan was to just make stuff like that invalid but I'd have to migrate my tests.  maybe I will idfk 
  */
 function entity_name(string $name) : string { 
     $name = Str\capitalize($name); 
@@ -39,7 +39,7 @@ function entity_name(string $name) : string {
 }
 
 
-function entity_out(Schema $schema, string $dir, ?string $namespace = NULL) : void { 
+function write(Schema $schema, string $dir, ?string $namespace = NULL) : void { 
 
     \catarini\util\ensure_dir($dir); 
 
@@ -124,6 +124,24 @@ function entity_out(Schema $schema, string $dir, ?string $namespace = NULL) : vo
                         ->setPublic()
                     )
 
+                    /*
+                        __sql_tbl 
+                        Table object
+                     */
+                    // ->addProperty(
+                    //     (new CodegenProperty($hack_config, '__sql_tbl'))
+                    //     ->setType('Table')
+                    //     ->setValue(    )
+                    //     ->setProtected()
+                    // )
+                    ->addMethod(
+                        ($hack->codegenMethod('__sql_tbl'))
+                        ->setProtected()
+                        ->setIsStatic(TRUE)
+                        ->setReturnType('Table')
+                        ->setBody("return _db_schema()->getTable('$name');")
+                    )
+
 
                     // Columns, rendered as instance properties 
                     ->addProperties(  $table->getColumns() |> Vec\map($$, $col ==> {
@@ -177,9 +195,17 @@ function entity_out(Schema $schema, string $dir, ?string $namespace = NULL) : vo
 
                     //TODO: 
                     /*
-                        * ::q($id) 
                         * ->__cols($prefix) ? Or is that not helpful in codegen  
                      */
+
+
+
+                     /* ::query
+                      */
+                    // ->addMethod($hack->codegenMethod('q')
+                    //     ->setReturnType("EntityQuery<$classname>")
+                    //     ->setBody("")
+                    // )
 
             )
 

@@ -31,7 +31,7 @@ class SchemaOutputTest extends Facebook\HackTest\HackTest {
             // Table 
 
             $table      = $tables[$x]; 
-            $ex_table   = $expected_tables[$x]; // lol $ex
+            $ex_table   = $expected_tables[$x]; // lol $ex table 
 
             expect($table->getName())->toBeSame($ex_table->getName());
 

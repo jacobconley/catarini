@@ -4,28 +4,21 @@ use catarini\db\{ Type };
 use catarini\db\schema\{ Table, Column, Schema, Reference, ReferenceAction, Relationship, RelationshipEnd, Cardinality }; 
 use catarini\db\backend\mysql; 
 use catarini\db\migration\SchemaWriter;
-
-
+use catarini\db\codegen\Codegen; 
 
 
 
 <<__EntryPoint>>
-function _test_codegen_main() : void { 
+function _test_codegen_main() : void 
+{
+    $dir    = _test_dir().'/output';
+    $ns_pvt = _test_namespace_private();
+    $ns_pub = _test_namespace_public();
 
-    $dir = _test_dir().'/output';
     $schema = TestSchema::GET()->schema;
 
-    $writer = new SchemaWriter($schema, $dir);
-    $writer->writeHack(_test_namespace());
 
-
-    /*
-     * These are MySQL tests only 
-     */
-
-
-    // (testEntities) 
-
-    mysql\entity_out($schema, $dir.'/entities', _test_namespace());
-
+    $codegen = new Codegen(NULL, $ns_pub, "$dir/public/", $ns_pvt, "$dir/private/");
+    $codegen->genSchema($schema);
+    $codegen->genBaseEntities($schema);
 }

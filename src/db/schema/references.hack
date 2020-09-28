@@ -155,9 +155,8 @@ class Relationship {
 
 
 
-    // for now, presume this is the owned table 
     /**
-     * Sets the right operand of this relationship, which is presumed to be the "owned" table - i.e. the one with the referencing foreign key. 
+     * Sets the right operand of this relationship, which is presumed to be the "owned" table - i.e. the one with the referencing foreign key - UNLESS an intermediate is given
      * [!] This function overwrites $this->left->cardinality, to either OPTIONAL or MANDATORY based on the nullability of the foreign key.
      *  (This behavior likely to be removed - see https://github.com/jacobconley/catarini/issues/39)
      * By default, $owned_attr will default to the name of a unique foreign key referencing the given table.  If no such key exists, an exception will be thrown.
@@ -170,7 +169,7 @@ class Relationship {
     protected function setRightTable(string $name, ?string $owned_attr, ?string $alias, ?Table $intermediate = NULL) : void { 
         $right = $this->schema->getTable($name); 
 
-        $owned_obj = $intermediate ?? $right;
+        $owned_obj = $intermediate ?? $right; // whew.  this fixed a potentially nasty bug.  probably still terrible program design though 
         $owned_col =   $owned_attr is nonnull ?  $owned_obj->getColumn($owned_attr)  :  $owned_obj->getColumnReferencing($this->getLeft()->table);
         if($owned_col is null) throw new \catarini\exceptions\InvalidOperation("Could not determine an unambigous reference attribute"); // TODO: Less shitty error message
         $owned_attr = $owned_col->getName();
