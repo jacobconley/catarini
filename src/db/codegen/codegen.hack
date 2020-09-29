@@ -29,7 +29,7 @@ class Codegen {
     }
 
 
-    private string $schema_fn = '_db_schema()';
+    private string $schema_fn = '_db_schema';
     public function __schema_obj() : string { return "\\$this->namespace_private\\$this->schema_fn()"; }
 
     public function __table_obj(string $name) : string { 
@@ -38,14 +38,14 @@ class Codegen {
 
 
     public function getEntityBase(Table $table) : string { 
-        $ns     = $this->namespace_private;
+        $ns     = $this->namespace_private.'\\';
         $name   = $table->getEntityName();
-        return "\\$ns\\$name"; 
+        return $ns.$name;  
     }
     public function getEntityUserland(Table $table) : string { 
-        $ns     = "\\$this->namespace_public" ?? '';
+        $ns     = "$this->namespace_public\\" ?? '';
         $name   = $table->getEntityName();
-        return "$ns\\$name"; 
+        return $ns.$name;
     }
 
 

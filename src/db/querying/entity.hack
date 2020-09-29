@@ -4,8 +4,8 @@ use catarini\db\{ Database };
 
 abstract class Entity 
 {
-    public abstract function save()     : void; 
-    public abstract function del()      : void; 
+    // public abstract function save()     : void; 
+    // public abstract function del()      : void; 
 
 
     protected Database  $DB;

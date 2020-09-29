@@ -76,6 +76,7 @@ function write(\catarini\db\codegen\Codegen $parent,Schema $schema, string $pub_
 
         // Generating constructor assignments - doing this programmatically to avoid hassle.  probably a bad idea?
         $constructor_body = $hack->codegenHackBuilder();
+        $constructor_body->addLine('parent::__construct($DB);');
         foreach($columns as $col) { 
             $name = $col->getName();
             $constructor_body->addf('$this->%s = $%s;', $name, $name); 
@@ -92,7 +93,7 @@ function write(\catarini\db\codegen\Codegen $parent,Schema $schema, string $pub_
             $from_sql->addf('$%s = %s;', $name, $col->__sql_val_call("\$row['$name']"));
             $from_sql->ensureNewLine();
         }
-        $from_sql->addf("return new %s(%s);",    $classname,       Vec\map($col_names, $x ==> '$'.$x)  |>  Str\join($$, ', ')       );
+        $from_sql->addf("return new %s(\$DB, %s);",    $classname,       Vec\map($col_names, $x ==> '$'.$x)  |>  Str\join($$, ', ')       );
         $from_sql = $from_sql->getCode();
         // uh change this to make it call constructor not set loool 
 
@@ -104,11 +105,13 @@ function write(\catarini\db\codegen\Codegen $parent,Schema $schema, string $pub_
 
         $file
             ->useNamespace('catarini\db')
-            ->useType('catarini\db\Type')
+            ->useNamespace('catarini\db\backend\mysql')
+            ->useType('catarini\db\{ Database, Type }')
             ->useType('catarini\db\schema\Table')
             ->useType('catarini\db\schema\Column')
-            ->useType('catarini\db\querying\Entity')
-            ->useType('catarini\db\querying\EntityQuery')
+            ->useType('catarini\db\querying\{ Entity, EntityQuery, EntityQueryTarget }')
+
+            ->useType($parent->getEntityUserland($table), 'USERLAND')
 
             ->useFunction('catarini\db\type\__sql_val')
             ->useFunction('catarini\db\type\__sql_val_opt')
@@ -116,6 +119,7 @@ function write(\catarini\db\codegen\Codegen $parent,Schema $schema, string $pub_
             ->addClass(
 
                 $hack->codegenClass($classname)
+                    ->setExtends('Entity')
 
 
                     /*  __sql_cols
@@ -139,13 +143,13 @@ function write(\catarini\db\codegen\Codegen $parent,Schema $schema, string $pub_
                     //     ->setValue(    )
                     //     ->setProtected()
                     // )
-                    ->addMethod(
-                        ($hack->codegenMethod('__sql_tbl'))
-                        ->setProtected()
-                        ->setIsStatic(TRUE)
-                        ->setReturnType('Table')
-                        ->setBody("return _db_schema()->getTable('$name');")
-                    )
+                    // ->addMethod(
+                    //     ($hack->codegenMethod('__sql_tbl'))
+                    //     ->setProtected()
+                    //     ->setIsStatic(TRUE)
+                    //     ->setReturnType('Table')
+                    //     ->setBody("return _db_schema()->getTable('$name');")
+                    // )
 
 
                     // Columns, rendered as instance properties 
@@ -170,6 +174,7 @@ function write(\catarini\db\codegen\Codegen $parent,Schema $schema, string $pub_
                     ->addMethod(
                         ($hack->codegenMethod('__construct'))
 
+                        ->addParameter('Database $DB')
                         ->addParameters( Vec\map($columns, $col ==>  {  
                             $type = $col->_str_HackType();  
                             $name = $col->getName();
@@ -189,6 +194,7 @@ function write(\catarini\db\codegen\Codegen $parent,Schema $schema, string $pub_
                             ->setIsStatic(TRUE)
                             ->setReturnType($classname)
 
+                            ->addParameter('Database $DB')
                             ->addParameter($from_sql_arg) 
 
 
@@ -205,12 +211,19 @@ function write(\catarini\db\codegen\Codegen $parent,Schema $schema, string $pub_
 
 
 
+
+
                      /* ::query
                       */
-                    // ->addMethod($hack->codegenMethod('q')
-                    //     ->setReturnType("EntityQuery<$classname>")
-                    //     ->setBody("")
-                    // )
+                    ->addMethod($hack->codegenMethod('q')
+                        ->setReturnType("EntityQuery<this>")
+                        ->setBody(
+                            $hack->codegenHackBuilder()
+                            ->addLinef("\$tgt = new EntityQueryTarget(%s);",  $parent->__table_obj($table->getName()))
+                            ->addLine('return new mysql\EntityQuery<this>($tgt);')
+                            ->getCode()
+                        )
+                    )
 
             )
 
@@ -248,7 +261,7 @@ function write(\catarini\db\codegen\Codegen $parent,Schema $schema, string $pub_
         $file->addClass(
 
             $hack->codegenClass($name)
-                ->setExtends($parent->getEntityBase($table))
+                ->setExtends('\\'.$parent->getEntityBase($table))
                 ->setIsFinal(TRUE)
 
         )
