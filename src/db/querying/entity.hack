@@ -1,15 +1,15 @@
 namespace catarini\db\querying;
 
-use catarini\db\{ Database };
+use catarini\db\{ DatabaseInstance };
 
-abstract class Entity 
+abstract class Entity
 {
     // public abstract function save()     : void; 
     // public abstract function del()      : void; 
 
 
-    protected Database  $DB;
-    protected function __construct(Database $DB) { 
+    protected DatabaseInstance  $DB;
+    protected function __construct(DatabaseInstance $DB) { 
         $this->DB = $DB;
     }
 

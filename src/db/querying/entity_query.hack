@@ -1,6 +1,6 @@
 namespace catarini\db\querying;
 
-use catarini\db\{ DatabaseInstance };
+use catarini\db\{ Database };
 use catarini\db\schema\{ Schema, Table };
 
 use HH\Lib\{ Vec }; 
@@ -178,6 +178,10 @@ abstract class EntityQuery<Tm as Entity> {
 
 
 
+    
+    // Initializers
+    // Obviously the legacy Map type here will have to go eventually.  Keeping it for SQL compatibility now 
+    protected abstract function from_row(Map<string, ?string> $row) : Tm; 
 
 
 
@@ -190,7 +194,7 @@ abstract class EntityQuery<Tm as Entity> {
     //  tables and do a full outer join, the user can use ::from_sql() to get each individual row 
 
 
-    // public abstract function first() : Awaitable<Tm>;
+    public abstract function first() : Awaitable<Tm>;
 
 
     // Accessors

@@ -20,5 +20,5 @@ function _test_codegen_main() : void
 
     $codegen = new Codegen(NULL, $ns_pub, "$dir/public/", $ns_pvt, "$dir/private/");
     $codegen->genSchema($schema);
-    $codegen->genBaseEntities($schema);
+    $codegen->genEntities($schema);
 }

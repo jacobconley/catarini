@@ -105,17 +105,4 @@ final class TestSchema {
         return new TestSchema();
     }
 
-
-    
-
-    /*
-
-        belongs_to - "references" better?  
-
-        student -|---|- student_class -|---|-   class ->|------------|- teacher
-        ^                                        ^
-        -|---------------------- subject |-------|   
-
-    */
-
 }

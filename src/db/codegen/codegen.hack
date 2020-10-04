@@ -9,8 +9,8 @@ class Codegen {
 
     private string $dir_public, $dir_private; 
 
-    public function getEntityNamespace() : ?string{ return $this->namespace_public; }
-    public function getCodegenNamespace() : string { return $this->namespace_private; }
+    public function getPublicNamespace() : ?string{ return $this->namespace_public; }
+    public function getPrivateNamespace() : string { return $this->namespace_private; }
 
     
     // Convention set here:  public namespace, public dir, priv namespace, priv dir 
@@ -37,15 +37,27 @@ class Codegen {
     }
 
 
+
+
+    public function getEntityBaseNamespace() : string { return "$this->namespace_private\\entity"; }
+    public function getEntityQueryNamespace() : string { return "$this->namespace_private\\query"; }
+    public function getEntityUserlandNamespace() : string { return ($this->namespace_public ?? ''); }
+
+
+
     public function getEntityBase(Table $table) : string { 
-        $ns     = $this->namespace_private.'\\';
-        $name   = $table->getEntityName();
-        return $ns.$name;  
+        return $this->getEntityBaseNamespace()."\\".$table->getEntityName();
     }
     public function getEntityUserland(Table $table) : string { 
-        $ns     = "$this->namespace_public\\" ?? '';
-        $name   = $table->getEntityName();
-        return $ns.$name;
+        return $this->getEntityUserlandNamespace()."\\".$table->getEntityName();
+    }
+
+
+    public function getEntityQueryName(Table $table) : string { 
+        return "Query_".$table->getEntityName();
+    }
+    public function getEntityQuery(Table $table) : string { 
+        return $this->getEntityQueryNamespace().'\\'.$this->getEntityQueryName($table);
     }
 
 
@@ -57,8 +69,8 @@ class Codegen {
         schema\writeHack($this, $schema, $this->dir_private, $this->namespace_private);
     }
 
-    public function genBaseEntities(Schema $schema) : void { 
-        entities\write($this, $schema, $this->dir_public, $this->namespace_public, $this->dir_private, $this->namespace_private); 
+    public function genEntities(Schema $schema) : void { 
+        entities\writeAll($this, $schema, $this->dir_public, $this->namespace_public, $this->dir_private, $this->namespace_private); 
     }
 
     // public function genUserlandEntities() : void { 

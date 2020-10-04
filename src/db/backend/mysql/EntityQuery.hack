@@ -7,8 +7,9 @@
 
 namespace catarini\db\backend\mysql; 
 
+use catarini\db\{ DatabaseInstance };
 use catarini\db\querying;
-use catarini\db\querying\{ Entity, EntityQueryTarget };
+use catarini\db\querying\{ Entity, EntityQueryTarget, joinlist };
 use catarini\db\schema\Table;
 use catarini\log; 
 
@@ -79,9 +80,17 @@ class Condition extends querying\Condition {
 
 
 
-class EntityQuery<Tm as Entity> extends querying\EntityQuery<Tm> 
+abstract class EntityQuery<Tm as Entity> extends querying\EntityQuery<Tm> 
 { 
 
+    private ?DatabaseInstance $DB;
+    protected function DB() : DatabaseInstance { return \Facebook\TypeAssert\not_null($this->DB); }
+
+
+    public function __construct(?DatabaseInstance $DB, EntityQueryTarget $target, joinlist $previous = vec[]) { 
+        parent::__construct($target, $previous); 
+        $this->DB = $DB;
+    }
 
 
 
@@ -206,6 +215,8 @@ class EntityQuery<Tm as Entity> extends querying\EntityQuery<Tm>
 
         if(\count($conditions) > 0) {    
             $first = $conditions[0]->sql($conn);
+
+            //TODO:  This is a stupid use of the functional paradigm!  Just join on "\nAND" instead!
             $WHERE = "\nWHERE $first\n";
             $WHERE .= Vec\slice($conditions, 1) 
                     |> Vec\map($$,  $x ==> $x->sql()    ) 
@@ -228,7 +239,7 @@ class EntityQuery<Tm as Entity> extends querying\EntityQuery<Tm>
     //
     //
 
-    private function db() : AsyncMysqlConnection { 
+    private function conn() : AsyncMysqlConnection { 
         $db = \Catarini::GET()->db(); 
         if($db is /* backend\mysql */ Database) return $db->getMySQL(); 
         else throw new \catarini\exceptions\InvalidEnvironment("Current database is not MySQL");
@@ -239,14 +250,16 @@ class EntityQuery<Tm as Entity> extends querying\EntityQuery<Tm>
 
 
 
-    // public async function first() : Awaitable<Tm> { 
-    //     $SELECT     = $this->__SELECT();
-    //     $FROM       = $this->__FROM();
-    //     $WHERE      = $this->__WHERE(); 
+    public async function first() : Awaitable<Tm> { 
+        $SELECT     = $this->__SELECT();
+        $FROM       = $this->__FROM();
+        $WHERE      = $this->__WHERE(); 
 
-    //     $query      = $SELECT.$FROM.$WHERE."LIMIT 1";
-    //     log\query($query); 
+        $query      = $SELECT.$FROM.$WHERE."LIMIT 1";
+        log\query($query); 
 
-    //     // $this->db()->queryf($query, $this->)
-    // }
+        $qr = await $this->conn()->query($query);
+        // if($qr->numRows() == 0) 
+        return $this->from_row($qr->mapRows()[0]);
+    }
 }
